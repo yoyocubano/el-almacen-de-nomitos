@@ -1,234 +1,307 @@
 /**
  * EL ALMACÉN DE NOMITOS - js/data.js
- * Catálogo del inventario real (Local de Stockage Blue Bank -5) y configuración inicial.
+ * Catálogo del inventario real y plano del local:
+ * "PLAN DE DISPOSITION : STOCKAGE & ÉLECTRIQUE" (Local -5 Blue Bank)
  * Licencia: MIT
  */
 
 window.NOMITOS_DATA = (function() {
   'use strict';
 
-  // Zonas físicas del almacén según el inventario real
+  // Zonas del plano esquemático real del local -5
   var ZONES = {
-    mural: {
-      id: 'mural',
-      name: 'Côté Gauche : Stockage Mural',
-      badge: 'ESTRUCTURA METÁLICA',
+    gauche: {
+      id: 'gauche',
+      name: 'Côté Gauche : Mural & Électrique',
+      badge: 'RAYONNAGE & ACOUSTIQUE',
       color: '#2ea043',
-      rackTarget: [230, 240], // Coordenada base del anaquel en SVG
-      capacity: 35
+      subzones: ['Rayonnage Vert', 'Panneaux Acoustiques TEXAA', 'Zone Étroite (Sous bulle)', 'Local Électrique'],
+      capacity: 38
     },
-    mobilier: {
-      id: 'mobilier',
-      name: 'Côté Droit : Mobilier Bureau',
-      badge: 'POSTES DE TRAVAIL',
+    droite: {
+      id: 'droite',
+      name: 'Côté Droit : Mobilier & Informatique',
+      badge: 'SIT-STAND & POSTES ERGO',
       color: '#58a6ff',
-      rackTarget: [630, 240],
-      capacity: 32
+      subzones: ['Bureaux Sit-Stand', 'Sièges Bureau Ergo', 'Caissons & Bucks', 'Armoire Métallique & Racks Info'],
+      capacity: 30
     },
     fond: {
       id: 'fond',
-      name: 'Zone Fond : Logistique',
-      badge: 'MARQUE STREFF',
+      name: 'Zone Fond : Expédition & Archives',
+      badge: 'STREFF & ARCHIVES -6/-7',
       color: '#e3b341',
-      rackTarget: [430, 160],
+      subzones: ['Zone Expédition Cartons STREFF', 'Fond Archive (-6/-7)', 'Sacs Confidentiels'],
       capacity: 45
     },
     vrac: {
       id: 'vrac',
-      name: 'Vrac & Accessoires',
-      badge: 'ÉQUIPEMENT DIVERS',
+      name: 'Vrac & Équipements Divers',
+      badge: 'ACCESSOIRES BUREAU',
       color: '#bc8cff',
-      rackTarget: [430, 480],
-      capacity: 20
+      subzones: ['Portemanteaux', 'Poubelles Noires', 'Supports Porte-Plans'],
+      capacity: 15
     }
   };
 
-  // Artículos reales del local de stockage con stocks iniciales y capacidades
+  // Artículos del inventario real organizados según el plano de disposition
   var INITIAL_ITEMS = [
-    // Zona Côté Gauche : Stockage Mural
+    // ------------------------------------------------------------------------
+    // CÔTÉ GAUCHE : MURAL, ACOUSTIQUE & ÉLECTRIQUE
+    // ------------------------------------------------------------------------
     {
-      sku: 'MUR-01',
-      name: 'Rayonnage Industriel (Vert)',
-      zone: 'mural',
+      sku: 'MUR-VERT',
+      name: 'Rayonnage Industriel Vert',
+      zone: 'gauche',
+      subzone: 'Rayonnage Vert',
       stock: 1,
       capacity: 2,
       unit: 'Unité',
       color: '#2ea043',
-      note: 'Estructura metálica base'
+      itemType: 'rack_metal',
+      note: 'Rayonnage vert pour matériel divers'
     },
     {
-      sku: 'MUR-02',
+      sku: 'MUR-TEXAA',
       name: 'Panneaux Acoustiques TEXAA',
-      zone: 'mural',
+      zone: 'gauche',
+      subzone: 'Panneaux Acoustiques TEXAA',
       stock: 12,
       capacity: 20,
-      unit: 'Lot/Panneaux',
+      unit: 'Panneaux',
       color: '#ff7b72',
-      note: 'Acústica de oficina'
+      itemType: 'texaa_panel',
+      note: 'Panneaux muraux acoustiques rouge brique'
     },
     {
-      sku: 'MUR-03',
-      name: 'Plateaux de Table (Sous bulle)',
-      zone: 'mural',
+      sku: 'MUR-BULLE',
+      name: 'Plateaux sous bulle (Zone Étroite)',
+      zone: 'gauche',
+      subzone: 'Zone Étroite (Sous bulle)',
       stock: 8,
       capacity: 15,
-      unit: 'Unités',
+      unit: 'Plateaux',
       color: '#3fb950',
-      note: 'Superficies embaladas'
+      itemType: 'table_top',
+      note: 'Plateaux de table sous film à bulles'
     },
     {
-      sku: 'MUR-04',
+      sku: 'ELEC-CABLE',
+      name: 'Local Électrique : Câbles & Bobines',
+      zone: 'gauche',
+      subzone: 'Local Électrique',
+      stock: 3,
+      capacity: 6,
+      unit: 'Bobines',
+      color: '#d29922',
+      itemType: 'coils',
+      note: 'Bobines de câblage et outillage électrique'
+    },
+    {
+      sku: 'ELEC-RAD',
       name: "Radiateur électrique d'appoint",
-      zone: 'mural',
+      zone: 'gauche',
+      subzone: 'Local Électrique',
       stock: 1,
       capacity: 3,
       unit: 'Unité',
-      color: '#d29922',
-      note: 'Calefacción auxiliar'
+      color: '#e55d23',
+      itemType: 'radiator',
+      note: 'Chauffage mobile de secours'
     },
 
-    // Zona Côté Droit : Mobilier Bureau
+    // ------------------------------------------------------------------------
+    // CÔTÉ DROIT : MOBILIER, SIT-STAND & INFORMATIQUE
+    // ------------------------------------------------------------------------
     {
-      sku: 'MOB-01',
-      name: 'Sièges de Bureau (Ergo)',
-      zone: 'mobilier',
-      stock: 5,
-      capacity: 10,
-      unit: 'Unités',
-      color: '#58a6ff',
-      note: 'Sillas ergonómicas regulables'
-    },
-    {
-      sku: 'MOB-02',
+      sku: 'MOB-SITSTAND',
       name: 'Structures Sit-Stand (Moteurs)',
-      zone: 'mobilier',
+      zone: 'droite',
+      subzone: 'Bureaux Sit-Stand',
       stock: 2,
-      capacity: 6,
-      unit: 'Structures',
+      capacity: 4,
+      unit: 'Bureaux',
       color: '#79c0ff',
-      note: 'Mesas elevables con motor'
+      itemType: 'sit_stand',
+      note: 'Structures métal réglables en hauteur motorisées'
     },
     {
-      sku: 'MOB-03',
-      name: 'Tabourets Hauts / Techniques',
-      zone: 'mobilier',
-      stock: 3,
-      capacity: 6,
-      unit: 'Unités',
-      color: '#388bfd',
-      note: 'Taburetes de laboratorio/diseño'
+      sku: 'MOB-SIEGES',
+      name: 'Sièges de bureau ergonomiques',
+      zone: 'droite',
+      subzone: 'Sièges Bureau Ergo',
+      stock: 5,
+      capacity: 8,
+      unit: 'Sièges',
+      color: '#58a6ff',
+      itemType: 'ergo_chair',
+      note: '5 sièges bureau à roulettes et accoudoirs'
     },
     {
-      sku: 'MOB-04',
-      name: 'Caissons (Bucks) Bois/Métal',
-      zone: 'mobilier',
+      sku: 'MOB-BUCKS',
+      name: 'Caissons & Bucks (Bois/Métal)',
+      zone: 'droite',
+      subzone: 'Caissons & Bucks',
       stock: 4,
       capacity: 8,
       unit: 'Caissons',
       color: '#a5d6ff',
-      note: 'Cajoneras bajo mesa'
+      itemType: 'bucks',
+      note: 'Stockage bas sous bureau'
     },
     {
-      sku: 'MOB-05',
-      name: 'Armoire Métallique (Gris/Beige)',
-      zone: 'mobilier',
+      sku: 'MOB-ARMOIRE',
+      name: 'Armoire Métallique + Racks Info',
+      zone: 'droite',
+      subzone: 'Armoire Métallique & Racks Info',
       stock: 1,
       capacity: 2,
       unit: 'Armoire',
       color: '#8b949e',
-      note: 'Archivo con cerradura'
+      itemType: 'metal_cabinet',
+      note: 'Armoire verrouillée et matériel serveur'
+    },
+    {
+      sku: 'MOB-TABOURETS',
+      name: 'Tabourets Hauts / Techniques',
+      zone: 'droite',
+      subzone: 'Sièges Bureau Ergo',
+      stock: 3,
+      capacity: 6,
+      unit: 'Unités',
+      color: '#388bfd',
+      itemType: 'stool',
+      note: 'Assises hautes atelier'
     },
 
-    // Zona Fond : Logistique Streff
+    // ------------------------------------------------------------------------
+    // ZONE FOND : EXPÉDITION STREFF & ARCHIVES
+    // ------------------------------------------------------------------------
     {
-      sku: 'LOG-01',
-      name: 'Cartons Streff (World Wide Moving)',
+      sku: 'STR-MOVING',
+      name: 'Cartons STREFF (World Wide Moving)',
       zone: 'fond',
-      stock: 5,
-      capacity: 15,
-      unit: 'Cartons',
-      color: '#e3b341',
-      note: 'Cajas reforzadas mudanza'
-    },
-    {
-      sku: 'LOG-02',
-      name: 'Cartons divers (Petits formats)',
-      zone: 'fond',
-      stock: 12,
+      subzone: 'Zone Expédition Cartons STREFF',
+      stock: 15,
       capacity: 25,
       unit: 'Cartons',
-      color: '#d29922',
-      note: 'Paquetería compacta'
+      color: '#e3b341',
+      itemType: 'streff_box',
+      note: '15+ grands cartons Streff renforcés'
     },
     {
-      sku: 'LOG-03',
-      name: 'Sacs "À détruire"',
+      sku: 'STR-DIVERS',
+      name: 'Cartons divers (Petits formats)',
       zone: 'fond',
+      subzone: 'Zone Expédition Cartons STREFF',
+      stock: 8,
+      capacity: 20,
+      unit: 'Cartons',
+      color: '#d29922',
+      itemType: 'small_box',
+      note: 'Fournitures et consommables'
+    },
+    {
+      sku: 'ARC-DETRUIRE',
+      name: 'Sacs "À détruire" (Confidentiel)',
+      zone: 'fond',
+      subzone: 'Fond Archive (-6/-7)',
       stock: 2,
-      capacity: 5,
+      capacity: 6,
       unit: 'Sacs',
       color: '#f85149',
-      note: 'Confidencial para triturar'
+      itemType: 'destroy_bag',
+      note: 'Archives confidentielles pour broyage'
     },
 
-    // Zona Vrac & Accessoires
+    // ------------------------------------------------------------------------
+    // VRAC & ACCESSOIRES
+    // ------------------------------------------------------------------------
     {
-      sku: 'VRC-01',
+      sku: 'VRC-MANTEAUX',
       name: 'Portemanteaux sur pied',
       zone: 'vrac',
+      subzone: 'Portemanteaux',
       stock: 2,
       capacity: 4,
       unit: 'Unités',
       color: '#bc8cff',
-      note: 'Percheros de pie'
+      itemType: 'coat_rack',
+      note: 'Équipement vestiaire'
     },
     {
-      sku: 'VRC-02',
+      sku: 'VRC-POUBELLES',
       name: 'Poubelles bureau (Noires)',
       zone: 'vrac',
+      subzone: 'Poubelles Noires',
       stock: 2,
       capacity: 6,
       unit: 'Bacs',
       color: '#6e7681',
-      note: 'Papeleras de despacho'
+      itemType: 'bin',
+      note: 'Corbeilles à papier'
     },
     {
-      sku: 'VRC-03',
-      name: 'Supports porte-plans',
+      sku: 'VRC-PLANS',
+      name: 'Supports porte-plans d’architecte',
       zone: 'vrac',
+      subzone: 'Supports Porte-Plans',
       stock: 3,
       capacity: 6,
       unit: 'Supports',
       color: '#d2a8ff',
-      note: 'Tubos y caballetes planos'
+      itemType: 'plan_rack',
+      note: 'Chevalets de plans et schémas'
     }
   ];
 
-  // Cuadrilla inicial de nomitos obreros con rostro y rasgos individuales
+  // Cuadrilla viva de nomitos obreros con roles y personalidades activas
   var GNOME_ROSTER = [
     {
       id: 'gnome-faustino',
-      name: 'Faustino Almacenero',
+      name: 'Faustino',
       role: 'bureau-in',
-      hatColor: '#e55d23', // Naranja seguridad
+      hatColor: '#e55d23', // Naranja
       beardColor: '#f7efe4',
-      eyes: 'focused',
-      expression: 'attentive',
-      pos: [175, 145], // Buró entrada
       isClerk: true,
-      title: 'Jefe de Entrada'
+      clerkTool: 'pen',
+      basePos: [130, 200],
+      title: 'Almacenero Recepción'
     },
     {
       id: 'gnome-gaspar',
-      name: 'Gaspar Almacenero',
+      name: 'Gaspar',
       role: 'bureau-out',
-      hatColor: '#007b70', // Teal logístico
+      hatColor: '#007b70', // Teal
       beardColor: '#e8ded0',
-      eyes: 'focused',
-      expression: 'attentive',
-      pos: [685, 475], // Buró salida
       isClerk: true,
-      title: 'Jefe de Expedición'
+      clerkTool: 'stamp',
+      basePos: [805, 520],
+      title: 'Almacenero Expedición'
+    },
+    {
+      id: 'gnome-tito',
+      name: 'Tito el Barrendero',
+      role: 'sweeper',
+      hatColor: '#58a6ff', // Azul
+      beardColor: '#ede2d3',
+      isClerk: false,
+      tool: 'broom',
+      basePos: [470, 360],
+      speed: 0.75,
+      title: 'Mantenimiento Pasillo Central'
+    },
+    {
+      id: 'gnome-bruno',
+      name: 'Bruno el Fuerte',
+      role: 'cart_pusher',
+      hatColor: '#2ea043', // Verde
+      beardColor: '#d6c6b2',
+      isClerk: false,
+      tool: 'hand_truck',
+      basePos: [470, 480],
+      speed: 0.85,
+      title: 'Operador Transpaleta'
     },
     {
       id: 'gnome-pepe',
@@ -236,47 +309,35 @@ window.NOMITOS_DATA = (function() {
       role: 'carrier',
       hatColor: '#e55d23',
       beardColor: '#ffffff',
-      eyes: 'happy',
-      expression: 'smile',
-      pos: [215, 340],
       isClerk: false,
-      speed: 1.15
-    },
-    {
-      id: 'gnome-bruno',
-      name: 'Bruno el Fuerte',
-      role: 'carrier',
-      hatColor: '#007b70',
-      beardColor: '#d6c6b2',
-      eyes: 'determined',
-      expression: 'strong',
-      pos: [430, 260],
-      isClerk: false,
-      speed: 0.95
+      tool: 'box',
+      basePos: [320, 360],
+      speed: 1.15,
+      title: 'Porteador Rápido'
     },
     {
       id: 'gnome-nico',
       name: 'Nico Apilador',
       role: 'carrier',
-      hatColor: '#f4b942',
+      hatColor: '#f4b942', // Amarillo
       beardColor: '#ffffff',
-      eyes: 'happy',
-      expression: 'curious',
-      pos: [580, 340],
       isClerk: false,
-      speed: 1.05
+      tool: 'box',
+      basePos: [620, 360],
+      speed: 1.0,
+      title: 'Porteador y Apilador'
     },
     {
-      id: 'gnome-tito',
-      name: 'Tito el Cuidadoso',
-      role: 'carrier',
-      hatColor: '#bc8cff',
-      beardColor: '#ede2d3',
-      eyes: 'wide',
-      expression: 'calm',
-      pos: [430, 390],
+      id: 'gnome-blas',
+      name: 'Blas el Inspector',
+      role: 'walker',
+      hatColor: '#bc8cff', // Violeta
+      beardColor: '#f4ece2',
       isClerk: false,
-      speed: 1.0
+      tool: 'clipboard',
+      basePos: [470, 240],
+      speed: 0.8,
+      title: 'Inspector de Pasillos'
     }
   ];
 
@@ -284,6 +345,7 @@ window.NOMITOS_DATA = (function() {
     ZONES: ZONES,
     INITIAL_ITEMS: INITIAL_ITEMS,
     GNOME_ROSTER: GNOME_ROSTER,
-    CONGESTION_THRESHOLD: 0.82 // Al 82% se activa la advertencia de pasillo
+    CONGESTION_THRESHOLD: 0.80, // Si pasa del 80% se activa alarma pasillo
+    SECURITY_NOTE: 'PRIORITÉ : DÉGAGER LE COULOIR CENTRAL (ZONE CRITIQUE)'
   };
 })();

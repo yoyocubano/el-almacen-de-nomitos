@@ -1,10 +1,10 @@
 /**
  * EL ALMACÉN DE NOMITOS - js/ui.js
- * Interfaz de la Pantalla 1 (Datos / Documento de Inventario):
- * - Tabla interactiva tipo hoja de cálculo
- * - Formulario de registro de albaranes in/out
- * - Reporte de diferencias en tiempo real
- * - Bitácora de transacciones
+ * Interfaz de la Pantalla 1 (Datos / Inventaire Local Stockage -5):
+ * - Tabla interactiva con desglose de las 12 zonas reales del plano
+ * - Volúmenes reales destacados: 5 Sièges ergo, 2 Sit-stand, 15+ Cartons Streff
+ * - Reporte de diferencias (+ / -) con histórico cronológico
+ * - Formulario de albarán de entrada/salida y simulación
  * Licencia: MIT
  */
 
@@ -29,7 +29,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     eventList: null,
     toast: null,
     mobileButtons: null,
-    zoneFilterPills: null
+    corridorStatus: null
   };
 
   function init() {
@@ -47,7 +47,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     dom.eventList = document.getElementById('event-list');
     dom.toast = document.getElementById('toast');
     dom.mobileButtons = document.querySelectorAll('.mobile-switch button');
-    dom.zoneFilterPills = document.querySelectorAll('.filter-pill');
+    dom.corridorStatus = document.getElementById('corridor-status');
 
     populateProductSelect();
     bindEvents();
@@ -73,17 +73,23 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     var metrics = Engine.ledger.getMetrics();
     if (dom.totalUnits) dom.totalUnits.textContent = metrics.totalUnits;
     if (dom.occupancy) dom.occupancy.innerHTML = metrics.occupancy + '<em>%</em>';
-    if (dom.gnomesCount) dom.gnomesCount.innerHTML = '6 <em>nomitos</em>';
+    if (dom.gnomesCount) dom.gnomesCount.innerHTML = '7 <em>nomitos</em>';
+
+    if (dom.corridorStatus) {
+      if (metrics.isCongested) {
+        dom.corridorStatus.innerHTML = '<span class="status-dot red"></span> <b>PASILLO EN PELIGRO</b> (Obstrucción crítica)';
+      } else {
+        dom.corridorStatus.innerHTML = '<span class="status-dot green"></span> <b>PASILLO CENTRAL DESPEJADO</b> (Circulación normal)';
+      }
+    }
 
     if (dom.statusChip) {
       if (metrics.isCongested) {
-        dom.statusChip.textContent = '⚠️ PASILLO SATURADO';
+        dom.statusChip.textContent = '⚠️ PASSAGE ENCOMBRÉ';
         dom.statusChip.style.color = 'var(--red)';
-        dom.statusChip.style.borderColor = 'var(--red)';
       } else {
-        dom.statusChip.textContent = isBusy ? 'OPERACIÓN EN CURSO' : 'ALMACÉN OPERATIVO';
+        dom.statusChip.textContent = isBusy ? 'TRANSPORTANDO...' : 'ALMACÉN VIVO';
         dom.statusChip.style.color = isBusy ? 'var(--orange)' : 'var(--teal)';
-        dom.statusChip.style.borderColor = 'var(--line)';
       }
     }
   }
@@ -110,7 +116,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
               '<i class="swatch" style="background:' + p.color + '"></i>' +
               '<div>' +
                 '<b>' + p.name + '</b>' +
-                '<small>' + p.sku + ' · <span style="color:' + zoneInfo.color + '">' + zoneInfo.name.split(':')[0] + '</span></small>' +
+                '<small>' + p.sku + ' · <span style="color:' + zoneInfo.color + '">' + p.subzone + '</span></small>' +
               '</div>' +
             '</div>' +
           '</td>' +
@@ -130,13 +136,12 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
 
     dom.stockTableBody.innerHTML = html;
 
-    // Permitir seleccionar ítem al hacer clic en una fila
     var rows = dom.stockTableBody.querySelectorAll('.clickable-row');
     rows.forEach(function(row) {
       row.addEventListener('click', function() {
         var sku = row.getAttribute('data-sku');
         if (dom.productSelect) dom.productSelect.value = sku;
-        showToast('Producto seleccionado: ' + sku);
+        showToast('Artículo seleccionado: ' + sku);
       });
     });
   }
@@ -146,7 +151,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     var txs = Engine.ledger.transactions;
 
     if (txs.length === 0) {
-      dom.eventList.innerHTML = '<li class="empty-state"><time>—</time><span>Sin movimientos en esta sesión</span><b>—</b></li>';
+      dom.eventList.innerHTML = '<li class="empty-state"><time>—</time><span>Sin albaranes registrados en esta sesión</span><b>—</b></li>';
       return;
     }
 
@@ -179,39 +184,34 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     var qty = dom.quantityInput ? parseInt(dom.quantityInput.value, 10) : 1;
 
     if (!sku) {
-      showToast('Selecciona un producto');
+      showToast('Selecciona un artículo');
       return;
     }
 
     var item = Engine.ledger.getItem(sku);
     if (!item) return;
 
-    // Validar con el motor
     if (type === 'out' && item.stock < qty) {
-      showToast('⚠️ No hay suficiente stock de ' + item.name + ' (disponible: ' + item.stock + ').');
+      showToast('⚠️ Stock insuficiente para ' + item.name + ' (disponible: ' + item.stock + ').');
       return;
     }
 
-    // Bloquear UI temporalmente
     isBusy = true;
     updateButtonsState();
 
-    // Enviar a vista de almacén si es pantalla móvil
     if (window.matchMedia('(max-width:900px)').matches) {
       setMobileScreen('warehouse');
     }
 
-    // Crear la misión espacial
     var mission = Engine.dispatcher.createMission(type, sku, qty);
 
-    showToast((type === 'in' ? '📦 Camión arribó con +' : '🚚 Preparando salida de −') + qty + ' ' + item.unit + ' · ' + item.sku);
+    showToast((type === 'in' ? '📦 Camión en Muelle A: +' : '🚚 Furgoneta en Muelle B: −') + qty + ' ' + item.unit + ' · ' + item.sku);
 
-    // Disparar la animación del almacén
+    // Los nomitos ejecutan la misión a través del plano del edificio
     await Warehouse.dispatchGnomeMovement(mission);
 
-    // Actualizar el libro de existencias contable
+    // Actualizar libro contable
     var res = Engine.ledger.recordMovement(sku, type, qty);
-
     Engine.dispatcher.completeMission(mission.id);
 
     isBusy = false;
@@ -219,7 +219,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     renderAll();
 
     if (res.metrics && res.metrics.isCongested) {
-      showToast('⚠️ ATENCIÓN: Pasillo central del Local -5 saturado.');
+      showToast('⚠️ AVERTISSEMENT SÉCURITÉ : Passage central encombré au local -5 !');
     }
   }
 
@@ -236,7 +236,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
     var randItem = items[Math.floor(Math.random() * items.length)];
     var isEntry = Math.random() > 0.45;
 
-    var qty = Math.floor(Math.random() * 4) + 1;
+    var qty = Math.floor(Math.random() * 3) + 1;
     if (!isEntry && randItem.stock <= 1) isEntry = true;
 
     if (dom.productSelect) dom.productSelect.value = randItem.sku;
@@ -276,7 +276,7 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
         if (isBusy) return;
         Engine.ledger.reset();
         renderAll();
-        showToast('Documento e inventario reiniciados a valores iniciales.');
+        showToast('Inventario y libro de existencias restablecidos.');
       });
     }
 
@@ -288,7 +288,6 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
       });
     }
 
-    // Atajos de incremento rápido en cantidad
     document.querySelectorAll('[data-qty-add]').forEach(function(badge) {
       badge.addEventListener('click', function() {
         var add = parseInt(badge.getAttribute('data-qty-add'), 10) || 1;
@@ -299,7 +298,6 @@ window.NOMITOS_UI = (function(Data, Engine, Warehouse) {
       });
     });
 
-    // Píldoras de filtro por zona
     document.querySelectorAll('.filter-pill').forEach(function(pill) {
       pill.addEventListener('click', function() {
         document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active'); });

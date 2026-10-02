@@ -6,23 +6,36 @@ Videojuego de gestión de almacén con obreros nomitos. Proyecto open source (MI
 
 ---
 
-## 🎮 La Doble Pantalla
+## 🎮 Versión 2.0 — Gemelo Vivo & Plano de Disposition
 
-1. **Pantalla de datos (Libro de existencias):** 
-   - Un tablero/documento tipo hoja de cálculo donde se registran las entradas y salidas de mercancía.
-   - Cada actualización reporta **diferencias exactas de stock (+ / −)** por producto.
-   - Zonas reales basadas en el local de stockage Blue Bank (-5):
-     - *Côté Gauche : Stockage Mural* (rayonnages industriales, paneles Texaa, tableros).
-     - *Côté Droit : Mobilier Bureau* (mesas sit-stand con motor, sillas ergonómicas, cajoneras).
-     - *Zone Fond : Logistique* (cajas Streff Worldwide Moving, paquetería).
-     - *Vrac & Accessoires* (percheros, papeleras, portaplanos).
-   - Detección de peligro: advertencia de seguridad si el pasillo central se congestiona.
+Esta versión incorpora el plano esquemático real del local de stockage de Blue Bank (**"PLAN DE DISPOSITION : STOCKAGE & ÉLECTRIQUE"**, Local -5) y vida continua para los nomitos:
 
-2. **Pantalla del almacén (Gemelo espacial activo):**
-   - **Puerto de entrada:** Gate de camiones con muelle A y **buró de entrada** donde el almacenero **Faustino** inspecciona y firma albaranes.
-   - **Puerto de salida:** Gate de furgonetas con muelle B y **buró de salida** donde el almacenero **Gaspar** sella pedidos y valida expediciones.
-   - **Pasillos y anaqueles:** Muestra visual de cajas físicas apiladas en tiempo real.
-   - **Cuadrilla de nomitos obreros:** Gnomos con rostro expresivo (ojos, cejas móviles, barbas esponjosas y gorros cónicos), esfuerzo al cargar (`straining`), y transporte cinético por los pasillos.
+### 1. Vida Permanente (El almacén nunca se detiene)
+Aunque no se registre ningún movimiento en la hoja de datos, los nomitos continúan su labor:
+- **Tito el Barrendero:** Recorre continuamente el pasillo central con su escoba manteniéndolo limpio y despejado.
+- **Bruno el Fuerte:** Empuja la transpaleta manual cargada con cajas Streff entre pasillos.
+- **Blas el Inspector:** Camina con su portapapeles revisando estantes e inspeccionando stock con iconos de diálogo.
+- **Faustino (Recepción) y Gaspar (Expedición):** En sus respectivos burós sellando y validando albaranes con globos de diálogo interactivos.
+- **Pepe y Nico:** Patrullan y descansan en guardia, listos para correr al muelle cuando entra o sale un pedido.
+
+### 2. Layout del Plano Real (Nave Cerrada con Muros y Pasillo Central)
+El almacén es la nave arquitectónica del plano, con sus muros perimetrales delimitados y las zonas organizadas en 3 filas y un pasillo central:
+- **COULOIR CENTRAL (Zona Crítica):** Marcado en el suelo con franjas de seguridad amarillas y negras y la consigna oficial: *"ZONE CRITIQUE : DÉGAGEMENT OBLIGATOIRE"*.
+- **Fila Izquierda (Mural, Acoustique & Électrique):**
+  - *Rayonnage Industriel Vert* (matériel divers).
+  - *Panneaux Acoustiques TEXAA* (paneles rojizos acústicos alineados).
+  - *Zone Étroite* (plateaux de table embalados sous bulle).
+  - *Local Électrique* (bobinas de cableado, radiador de secours y cuadro).
+- **Fila Derecha (Mobilier Bureau & Informatique):**
+  - *Bureaux Sit-Stand* (2 estructuras metálicas con motor y patas telescópicas).
+  - *Sièges de bureau ergonomiques* (5 sillas con ruedas y pistón de gas).
+  - *Caissons & Bucks* (cajoneras bajas de madera/metal).
+  - *Armoire Métallique & Racks Info* (armario con cerradura y servidor).
+- **Zona Fondo (Expédition & Archives):**
+  - *Zone Expédition Cartons STREFF* (15+ cajas Streff Worldwide Moving doradas sobre palets).
+  - *Fond Archive -6/-7* (cajas y sacos para triturar confidencialmente).
+- **Vrac & Accessoires:**
+  - Portemanteaux, poubelles noires de bureau y supports porte-plans.
 
 ---
 
@@ -46,13 +59,13 @@ open index.html
 el-almacen-de-nomitos/
 ├── index.html                           # Shell principal (doble pantalla sincronizada)
 ├── css/
-│   └── styles.css                       # Diseño visual, split-screen y temas light/dark
+│   └── styles.css                       # Diseño split-screen, nave industrial, dark/light
 ├── js/
-│   ├── data.js                          # Catálogo de artículos del Local -5 y cuadrilla
-│   ├── engine.js                        # Motor contable desacoplado (StockLedger y misiones)
-│   ├── nomitos.js                       # Renderizado vectorial de nomitos con cara y FSM
-│   ├── warehouse.js                     # Render espacial SVG: muelles, burós, racks y rutas
-│   ├── ui.js                            # Spreadsheet interactivo y formularios de albarán
+│   ├── data.js                          # Inventario real del plano (16 artículos) y cuadrilla
+│   ├── engine.js                        # Motor contable desacoplado (StockLedger y diffs)
+│   ├── nomitos.js                       # Render vectorial con escoba, transpaleta y globos
+│   ├── warehouse.js                     # Plano arquitectónico, couloir central y loop 60fps
+│   ├── ui.js                            # Spreadsheet interactivo con volúmenes reales
 │   └── main.js                          # Orquestador, atajos de teclado y reloj
 ├── inventario-blue-bank-local-5.html    # Inventario logístico real de referencia
 ├── inspeccion-tecnica-electrica.html    # Informe técnico de inspección de referencia
@@ -66,23 +79,12 @@ el-almacen-de-nomitos/
 
 ## ⌨️ Atajos de teclado
 
-- **`E`**: Registrar Entrada rápida de mercancía (Camión → Buró Entrada → Anaquel).
-- **`S`**: Registrar Salida rápida de mercancía (Anaquel → Buró Salida → Muelle Salida).
+- **`E`**: Registrar Entrada rápida de mercancía (Muelle A → Buró Faustino → Anaquel).
+- **`S`**: Registrar Salida rápida de mercancía (Anaquel → Buró Gaspar → Muelle B).
 - **`R`**: Simular movimiento aleatorio (demostración activa).
-
----
-
-## 📚 Referencias Open Source
-
-- [Fishverse / Market Mayhem](https://github.com/bennygx234-design/fishverse): Tycoon de navegador en HTML/CSS/JS plano sin dependencias ni build.
-- [Project-SCIM](https://github.com/abhijitbetigeri/project-scim): Simulación de almacén encarnada (el stock como problema espacial).
-- [LogiX](https://github.com/deasy-mandasari/logix): Simulación de almacén y rutas de reparto en HTML5.
-- [Multi-Agent Logistics](https://github.com/beratmutlu/multi-agent-logistics): Arquitectura multi-agente con MessageBus.
-- [Datacenter Tycoon 2D](https://github.com/ignaciochemes/datacenter-tycoon-2d): Tycoon 2D en navegador con vista en grid.
-- [RMF Industrial](https://github.com/ros-industrial/rmf_industrial): Gestión de flotas a gran escala (referencia arquitectónica).
 
 ---
 
 ## 📄 Licencia
 
-MIT — Código libre y abierto para todo el mundo.
+MIT — Código abierto para todo el mundo.

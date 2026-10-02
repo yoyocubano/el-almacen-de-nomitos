@@ -1,11 +1,13 @@
 /**
  * EL ALMACÉN DE NOMITOS - js/warehouse.js
- * Renderizado espacial del almacén (SVG interactivo):
- * - Gate de entrada con camión + Buró de entrada (Faustino)
- * - Gate de salida con furgoneta + Buró de salida (Gaspar)
- * - 4 Zonas físicas del inventario real (Mural, Mobilier, Logistique Streff, Vrac)
- * - Anaqueles con cajas físicas dinámicas
- * - Rutas cinéticas para los nomitos obreros
+ * Plano esquemático y motor espacial:
+ * "PLAN DE DISPOSITION : STOCKAGE & ÉLECTRIQUE" (Local -5 Blue Bank)
+ * 
+ * - Nave industrial delimitada por muros perimetrales
+ * - 3 Filas y Pasillo Central continuo ("COULOIR CENTRAL — DÉGAGEMENT OBLIGATOIRE")
+ * - 12 Zonas reales con objetos visibles: Sièges ergo, Sit-Stand, Cartons Streff, Panneaux Texaa
+ * - VIDA PERMANENTE: Loop de animación idle continuo (Tito barriendo, Bruno con transpaleta,
+ *   Blas inspeccionando, charlas, burós activos) + Misiones de albarán prioritarias.
  * Licencia: MIT
  */
 
@@ -15,397 +17,579 @@ window.NOMITOS_WAREHOUSE = (function(Data, Agents, Engine) {
   var NS = 'http://www.w3.org/2000/svg';
   var svgEl = null;
   var movingLayer = null;
-  var staticGnomesLayer = null;
-  var racksLayer = null;
-  var hazardBanner = null;
+  var gnomesSquad = [];
+  var animFrameId = null;
+  var lastTimestamp = null;
+  var isMissionActive = false;
 
-  // Waypoints clave del plano espacial (viewBox 0 0 940 720)
+  // Coordenadas espaciales dentro de la nave (viewBox 0 0 960 720)
+  var BUILDING = {
+    x: 24,
+    y: 20,
+    w: 912,
+    h: 680
+  };
+
   var WAYPOINTS = {
-    dockIn: [80, 260],
-    bureauIn: [180, 230],
-    centralCorridorWest: [280, 360],
-    centralCorridorCenter: [470, 360],
-    centralCorridorEast: [660, 360],
-    bureauOut: [740, 480],
-    dockOut: [860, 520],
-    // Zonas de almacenamiento
-    zoneMural: [250, 240],
-    zoneFond: [470, 210],
-    zoneMobilier: [690, 240],
-    zoneVrac: [470, 520]
+    gateIn: [85, 230],
+    bureauIn: [145, 230],
+    couloirNord: [470, 180],
+    couloirCentre: [470, 360],
+    couloirSud: [470, 540],
+    bureauOut: [810, 520],
+    gateOut: [870, 520],
+    // Puntos de carga de cada zona
+    rackVert: [210, 180],
+    rackTexaa: [210, 330],
+    rackBulle: [210, 480],
+    rackElec: [210, 600],
+    rackSitstand: [730, 180],
+    rackSieges: [730, 330],
+    rackBucks: [730, 470],
+    rackArmoire: [730, 590],
+    zoneStreff: [360, 110],
+    zoneArchive: [580, 110]
   };
 
   function init(svgSelector) {
     svgEl = document.querySelector(svgSelector);
     if (!svgEl) return;
 
-    svgEl.innerHTML = '';
-    renderStaticWorld();
-    renderRacks();
-    renderStationaryGnomes();
+    // Crear la cuadrilla autónoma
+    gnomesSquad = Agents.createSquad();
+
+    renderBuildingStructure();
+    renderAllWarehouseZones();
     setupEventListeners();
-  }
 
-  function renderStaticWorld() {
-    var width = 940, height = 720;
-
-    var html = '' +
-      '<defs>' +
-        // Trama de baldosas de hormigón industrial
-        '<pattern id="wh-grid" width="40" height="40" patternUnits="userSpaceOnUse">' +
-          '<path d="M40 0H0V40" fill="none" stroke="var(--line)" stroke-width="0.8" opacity="0.45"/>' +
-        '</pattern>' +
-        '<filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">' +
-          '<feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.14"/>' +
-        '</filter>' +
-        '<filter id="heavyShadow" x="-20%" y="-20%" width="140%" height="140%">' +
-          '<feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.22"/>' +
-        '</filter>' +
-      '</defs>' +
-
-      // Suelo general
-      '<rect width="' + width + '" height="' + height + '" fill="var(--floor)"/>' +
-      '<rect width="' + width + '" height="' + height + '" fill="url(#wh-grid)"/>' +
-
-      // Líneas de señalización vial en el suelo (amarillo seguridad)
-      '<line x1="120" y1="0" x2="120" y2="720" stroke="var(--yellow)" stroke-width="2" stroke-dasharray="8 8" opacity="0.4"/>' +
-      '<line x1="820" y1="0" x2="820" y2="720" stroke="var(--yellow)" stroke-width="2" stroke-dasharray="8 8" opacity="0.4"/>' +
-      '<path d="M140 360 H800" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.3"/>' +
-
-      // ----------------------------------------------------
-      // MUELLE DE ENTRADA (GATE A - CAMIÓN)
-      // ----------------------------------------------------
-      '<g id="gate-in" transform="translate(16, 120)">' +
-        '<rect width="94" height="230" rx="4" class="dock" fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Persiana industrial
-        '<rect x="12" y="24" width="70" height="100" fill="#1b2420" opacity="0.9"/>' +
-        '<path d="M12 40H82M12 56H82M12 72H82M12 88H82M12 104H82" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Rampa de descarga
-        '<rect x="8" y="140" width="78" height="60" fill="var(--teal)" opacity="0.18" stroke="var(--teal)" stroke-width="1.5"/>' +
-        '<circle cx="24" cy="214" r="6" fill="var(--teal)" class="pulse"/>' +
-        '<text x="47" y="174" text-anchor="middle" class="zone-label" fill="var(--teal)">MUELLE A</text>' +
-        '<text x="47" y="190" text-anchor="middle" class="tiny-label" fill="var(--muted)">RECEPCIÓN</text>' +
-        // Camión de reparto exterior
-        '<g id="truck-in" transform="translate(-6, 30)">' +
-          '<path d="M-4 12h54l22 24v42H-4Z" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
-          '<rect x="42" y="20" width="22" height="18" fill="var(--teal-soft)"/>' +
-          '<circle cx="14" cy="78" r="9" fill="#1b2420"/><circle cx="58" cy="78" r="9" fill="#1b2420"/>' +
-          '<rect x="2" y="16" width="36" height="52" fill="var(--teal)" opacity="0.8"/>' +
-          '<text x="20" y="46" text-anchor="middle" font-size="8" font-family="monospace" fill="#fff" font-weight="bold">CARGA</text>' +
-        '</g>' +
-      '</g>' +
-
-      // ----------------------------------------------------
-      // BURÓ DE ENTRADA (MESA DE FAUSTINO)
-      // ----------------------------------------------------
-      '<g id="bureau-in" transform="translate(136, 175)" filter="url(#softShadow)">' +
-        '<rect width="110" height="68" rx="4" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Tablero y documentos
-        '<rect x="10" y="10" width="38" height="26" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>' +
-        '<path d="M15 16h28M15 22h22M15 28h26" stroke="var(--teal)" stroke-width="2"/>' +
-        // Monitor de control
-        '<rect x="62" y="12" width="36" height="22" rx="2" fill="#1b2420"/>' +
-        '<rect x="65" y="15" width="30" height="16" fill="var(--teal)" opacity="0.85"/>' +
-        '<text x="55" y="56" text-anchor="middle" font-size="9" font-family="monospace" font-weight="bold" fill="var(--ink)">BURÓ ENTRADA</text>' +
-        '<text x="55" y="64" text-anchor="middle" font-size="7" font-family="monospace" fill="var(--muted)">Faustino (Control)</text>' +
-      '</g>' +
-
-      // ----------------------------------------------------
-      // BURÓ DE SALIDA (MESA DE GASPAR)
-      // ----------------------------------------------------
-      '<g id="bureau-out" transform="translate(680, 420)" filter="url(#softShadow)">' +
-        '<rect width="110" height="68" rx="4" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Selladora y comanda
-        '<rect x="62" y="10" width="38" height="26" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>' +
-        '<path d="M67 16h28M67 22h20M67 28h24" stroke="var(--orange)" stroke-width="2"/>' +
-        // Monitor de expedición
-        '<rect x="12" y="12" width="36" height="22" rx="2" fill="#1b2420"/>' +
-        '<rect x="15" y="15" width="30" height="16" fill="var(--orange)" opacity="0.85"/>' +
-        '<text x="55" y="56" text-anchor="middle" font-size="9" font-family="monospace" font-weight="bold" fill="var(--ink)">BURÓ SALIDA</text>' +
-        '<text x="55" y="64" text-anchor="middle" font-size="7" font-family="monospace" fill="var(--muted)">Gaspar (Expedición)</text>' +
-      '</g>' +
-
-      // ----------------------------------------------------
-      // MUELLE DE SALIDA (GATE B - FURGONETA)
-      // ----------------------------------------------------
-      '<g id="gate-out" transform="translate(826, 410)">' +
-        '<rect width="94" height="230" rx="4" class="dock" fill="var(--surface-2)" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Persiana
-        '<rect x="12" y="24" width="70" height="100" fill="#1b2420" opacity="0.9"/>' +
-        '<path d="M12 40H82M12 56H82M12 72H82M12 88H82M12 104H82" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Rampa de salida
-        '<rect x="8" y="140" width="78" height="60" fill="var(--orange)" opacity="0.18" stroke="var(--orange)" stroke-width="1.5"/>' +
-        '<circle cx="70" cy="214" r="6" fill="var(--orange)" class="pulse"/>' +
-        '<text x="47" y="174" text-anchor="middle" class="zone-label" fill="var(--orange)">MUELLE B</text>' +
-        '<text x="47" y="190" text-anchor="middle" class="tiny-label" fill="var(--muted)">EXPEDICIÓN</text>' +
-        // Furgoneta de recogida
-        '<g id="truck-out" transform="translate(26, 120)">' +
-          '<path d="M0 0h48l18 18v34H0Z" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
-          '<rect x="38" y="6" width="16" height="14" fill="var(--orange-soft)"/>' +
-          '<circle cx="12" cy="52" r="8" fill="#1b2420"/><circle cx="50" cy="52" r="8" fill="#1b2420"/>' +
-          '<rect x="4" y="6" width="30" height="40" fill="var(--orange)" opacity="0.8"/>' +
-          '<text x="19" y="30" text-anchor="middle" font-size="7" font-family="monospace" fill="#fff" font-weight="bold">ENVÍO</text>' +
-        '</g>' +
-      '</g>' +
-
-      // Capa de anaqueles
-      '<g id="racks-layer"></g>' +
-
-      // Banner de advertencia de congestión (Local -5)
-      '<g id="hazard-banner" transform="translate(270, 20)" opacity="0" style="transition:opacity 0.4s ease">' +
-        '<rect width="400" height="34" rx="4" fill="#bf3c32" filter="url(#softShadow)"/>' +
-        '<text x="200" y="21" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">' +
-          '⚠️ PASSAGE CENTRAL ENCOMBRÉ (LOCAL -5)' +
-        '</text>' +
-      '</g>' +
-
-      // Capa de trabajadores fijos (almaceneros en buró)
-      '<g id="static-gnomes-layer"></g>' +
-
-      // Capa de trabajadores en movimiento
-      '<g id="moving-gnomes-layer"></g>';
-
-    svgEl.innerHTML = html;
-    movingLayer = svgEl.querySelector('#moving-gnomes-layer');
-    staticGnomesLayer = svgEl.querySelector('#static-gnomes-layer');
-    racksLayer = svgEl.querySelector('#racks-layer');
-    hazardBanner = svgEl.querySelector('#hazard-banner');
-  }
-
-  function renderRacks() {
-    if (!racksLayer) return;
-
-    var metrics = Engine.ledger.getMetrics();
-    var zs = metrics.zoneStats;
-
-    var html = '' +
-      // 1. ZONA IZQUIERDA: STOCKAGE MURAL (Mural metálico)
-      renderRackModule({
-        id: 'rack-mural',
-        x: 180,
-        y: 280,
-        w: 160,
-        h: 180,
-        title: 'CÔTÉ GAUCHE : MURAL',
-        subtitle: 'Estructura Metálica',
-        color: Data.ZONES.mural.color,
-        units: zs.mural.units,
-        capacity: zs.mural.capacity,
-        boxItems: Engine.ledger.getItemsByZone('mural')
-      }) +
-
-      // 2. ZONA FONDO: LOGISTIQUE STREFF
-      renderRackModule({
-        id: 'rack-fond',
-        x: 390,
-        y: 80,
-        w: 160,
-        h: 180,
-        title: 'ZONE FOND : LOGISTIQUE',
-        subtitle: 'Cartons Streff',
-        color: Data.ZONES.fond.color,
-        units: zs.fond.units,
-        capacity: zs.fond.capacity,
-        boxItems: Engine.ledger.getItemsByZone('fond')
-      }) +
-
-      // 3. ZONA DERECHA: MOBILIER BUREAU
-      renderRackModule({
-        id: 'rack-mobilier',
-        x: 600,
-        y: 180,
-        w: 160,
-        h: 180,
-        title: 'CÔTÉ DROIT : MOBILIER',
-        subtitle: 'Sit-Stand & Sièges',
-        color: Data.ZONES.mobilier.color,
-        units: zs.mobilier.units,
-        capacity: zs.mobilier.capacity,
-        boxItems: Engine.ledger.getItemsByZone('mobilier')
-      }) +
-
-      // 4. ZONA INFERIOR: VRAC & ACCESSOIRES
-      renderRackModule({
-        id: 'rack-vrac',
-        x: 390,
-        y: 430,
-        w: 160,
-        h: 170,
-        title: 'VRAC & ACCESSOIRES',
-        subtitle: 'Bureautique',
-        color: Data.ZONES.vrac.color,
-        units: zs.vrac.units,
-        capacity: zs.vrac.capacity,
-        boxItems: Engine.ledger.getItemsByZone('vrac')
-      });
-
-    racksLayer.innerHTML = html;
-
-    // Actualizar banner de pasillo central encombré
-    if (hazardBanner) {
-      hazardBanner.setAttribute('opacity', metrics.isCongested ? '1' : '0');
-    }
-  }
-
-  function renderRackModule(cfg) {
-    var percent = Math.min(100, Math.round((cfg.units / cfg.capacity) * 100));
-    var boxes = [];
-
-    // Generar representación visual de cajas apiladas según el stock real
-    var totalBoxesToDraw = Math.min(24, Math.ceil(cfg.units * 0.7));
-    var boxIndex = 0;
-
-    cfg.boxItems.forEach(function(item) {
-      var count = Math.min(6, Math.ceil(item.stock * 0.6));
-      for (var b = 0; b < count; b++) {
-        if (boxIndex >= 18) break;
-        var col = boxIndex % 4;
-        var row = Math.floor(boxIndex / 4);
-        var bx = cfg.x + 18 + col * 32;
-        var by = cfg.y + 36 + row * 40;
-        boxes.push(
-          '<rect x="' + bx + '" y="' + by + '" width="24" height="20" rx="2" fill="' + item.color + '" stroke="#27342f" stroke-width="1" opacity="0.9"/>' +
-          '<line x1="' + bx + '" y1="' + (by + 10) + '" x2="' + (bx + 24) + '" y2="' + (by + 10) + '" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>'
-        );
-        boxIndex++;
-      }
-    });
-
-    return '' +
-      '<g id="' + cfg.id + '" filter="url(#softShadow)">' +
-        // Marco del estante / pasillo
-        '<rect x="' + cfg.x + '" y="' + cfg.y + '" width="' + cfg.w + '" height="' + cfg.h + '" rx="4" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
-        // Cabecera del anaquel
-        '<rect x="' + cfg.x + '" y="' + cfg.y + '" width="' + cfg.w + '" height="26" fill="var(--surface-2)"/>' +
-        '<line x1="' + cfg.x + '" y1="' + (cfg.y + 26) + '" x2="' + (cfg.x + cfg.w) + '" y2="' + (cfg.y + 26) + '" stroke="var(--line)" stroke-width="1"/>' +
-        '<text x="' + (cfg.x + cfg.w / 2) + '" y="' + (cfg.y + 16) + '" text-anchor="middle" font-family="monospace" font-size="9" font-weight="bold" fill="var(--ink)">' +
-          cfg.title +
-        '</text>' +
-        // Baldas metálicas horizontales
-        '<line x1="' + (cfg.x + 8) + '" y1="' + (cfg.y + 70) + '" x2="' + (cfg.x + cfg.w - 8) + '" y2="' + (cfg.y + 70) + '" stroke="var(--line-strong)" stroke-width="3"/>' +
-        '<line x1="' + (cfg.x + 8) + '" y1="' + (cfg.y + 115) + '" x2="' + (cfg.x + cfg.w - 8) + '" y2="' + (cfg.y + 115) + '" stroke="var(--line-strong)" stroke-width="3"/>' +
-        '<line x1="' + (cfg.x + 8) + '" y1="' + (cfg.y + 155) + '" x2="' + (cfg.x + cfg.w - 8) + '" y2="' + (cfg.y + 155) + '" stroke="var(--line-strong)" stroke-width="3"/>' +
-        // Cajas apiladas
-        boxes.join('') +
-        // Barra inferior de capacidad y métrica
-        '<rect x="' + (cfg.x + 12) + '" y="' + (cfg.y + cfg.h - 14) + '" width="' + (cfg.w - 24) + '" height="6" fill="var(--line)" rx="2"/>' +
-        '<rect x="' + (cfg.x + 12) + '" y="' + (cfg.y + cfg.h - 14) + '" width="' + ((cfg.w - 24) * percent / 100) + '" height="6" fill="' + cfg.color + '" rx="2"/>' +
-        '<text x="' + (cfg.x + cfg.w / 2) + '" y="' + (cfg.y + cfg.h + 14) + '" text-anchor="middle" font-family="monospace" font-size="9" fill="var(--muted)">' +
-          cfg.units + ' / ' + cfg.capacity + ' u. (' + percent + '%)' +
-        '</text>' +
-      '</g>';
-  }
-
-  function renderStationaryGnomes() {
-    if (!staticGnomesLayer) return;
-
-    // Almacenero de entrada: Faustino
-    var faustino = Agents.createGnomeSVG({
-      x: 185,
-      y: 195,
-      scale: 0.8,
-      hatColor: '#e55d23',
-      beardColor: '#f7efe4',
-      expression: 'focused',
-      isClerk: true,
-      clerkTool: 'pen'
-    });
-
-    // Almacenero de salida: Gaspar
-    var gaspar = Agents.createGnomeSVG({
-      x: 735,
-      y: 440,
-      scale: 0.8,
-      hatColor: '#007b70',
-      beardColor: '#e8ded0',
-      expression: 'focused',
-      isClerk: true,
-      clerkTool: 'stamp',
-      facing: -1
-    });
-
-    // Nomitos descansando en guardia (Pepe, Bruno, Nico)
-    var pepe = Agents.createGnomeSVG({ x: 260, y: 500, scale: 0.72, hatColor: '#e55d23', beardColor: '#fff', expression: 'happy' });
-    var bruno = Agents.createGnomeSVG({ x: 300, y: 500, scale: 0.74, hatColor: '#007b70', beardColor: '#d6c6b2', expression: 'normal' });
-    var nico = Agents.createGnomeSVG({ x: 620, y: 490, scale: 0.72, hatColor: '#f4b942', beardColor: '#fff', expression: 'happy', facing: -1 });
-
-    staticGnomesLayer.innerHTML = faustino + gaspar + pepe + bruno + nico;
+    // Arrancar el loop de vida permanente a 60 fps
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    lastTimestamp = performance.now();
+    loop(lastTimestamp);
   }
 
   /**
-   * Ejecuta la animación de transporte cinético de una misión.
-   * Entrada: Camión -> Buró Entrada (Faustino) -> Anaquel correspondiente.
-   * Salida: Anaquel -> Buró Salida (Gaspar) -> Gate Salida (Furgoneta).
+   * Bucle de simulación espacial continua (vida permanente)
    */
-  function dispatchGnomeMovement(mission) {
-    if (!movingLayer) return;
+  function loop(timestamp) {
+    var deltaTime = (timestamp - lastTimestamp) / 16.66; // Normalizado a ~1.0 a 60fps
+    if (deltaTime > 3) deltaTime = 3;
+    lastTimestamp = timestamp;
 
-    var type = mission.type;
-    var item = mission.item;
-    var count = mission.gnomeCount || 2;
-    var targetRack = WAYPOINTS.zoneFond;
+    // Actualizar cada nomito de la cuadrilla
+    gnomesSquad.forEach(function(nomito) {
+      if (nomito.state !== 'mission') {
+        nomito.tickIdle(deltaTime);
+      }
+    });
 
-    if (item.zone === 'mural') targetRack = WAYPOINTS.zoneMural;
-    else if (item.zone === 'mobilier') targetRack = WAYPOINTS.zoneMobilier;
-    else if (item.zone === 'vrac') targetRack = WAYPOINTS.zoneVrac;
+    renderActiveGnomes();
 
-    var promises = [];
+    animFrameId = requestAnimationFrame(loop);
+  }
 
-    for (var i = 0; i < count; i++) {
-      (function(idx) {
-        var hat = idx % 2 === 0 ? '#e55d23' : '#007b70';
-        var workerEl = document.createElementNS(NS, 'g');
-        workerEl.setAttribute('class', 'moving-worker');
-        movingLayer.appendChild(workerEl);
+  /**
+   * Renderiza los muros y arquitectura del Local -5
+   */
+  function renderBuildingStructure() {
+    var bx = BUILDING.x, by = BUILDING.y, bw = BUILDING.w, bh = BUILDING.h;
 
-        var pathPoints = [];
-        if (type === 'in') {
-          // ENTRADA: Muelle A -> Buró Entrada -> Pasillo -> Anaquel Destino
-          pathPoints = [
-            [WAYPOINTS.dockIn[0] + idx * 10, WAYPOINTS.dockIn[1]],
-            [WAYPOINTS.bureauIn[0] + idx * 8, WAYPOINTS.bureauIn[1] + 10],
-            [WAYPOINTS.centralCorridorWest[0], WAYPOINTS.centralCorridorWest[1]],
-            [targetRack[0] + (idx * 20 - 15), targetRack[1] + 25]
-          ];
-        } else {
-          // SALIDA: Anaquel Origen -> Pasillo Central -> Buró Salida -> Muelle B
-          pathPoints = [
-            [targetRack[0] + (idx * 20 - 15), targetRack[1] + 25],
-            [WAYPOINTS.centralCorridorCenter[0], WAYPOINTS.centralCorridorCenter[1]],
-            [WAYPOINTS.bureauOut[0] - idx * 8, WAYPOINTS.bureauOut[1] + 10],
-            [WAYPOINTS.dockOut[0] - idx * 10, WAYPOINTS.dockOut[1]]
-          ];
-        }
+    var html = '' +
+      '<defs>' +
+        // Baldosas de hormigón reforzado
+        '<pattern id="slab-grid" width="48" height="48" patternUnits="userSpaceOnUse">' +
+          '<path d="M48 0H0V48" fill="none" stroke="var(--line)" stroke-width="0.75" opacity="0.4"/>' +
+        '</pattern>' +
+        // Patrón de rayas amarillas y negras de seguridad
+        '<pattern id="hazard-stripes" width="20" height="20" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">' +
+          '<rect width="10" height="20" fill="#f4b942"/>' +
+          '<rect x="10" width="10" height="20" fill="#202a26"/>' +
+        '</pattern>' +
+        '<filter id="buildingShadow" x="-10%" y="-10%" width="120%" height="120%">' +
+          '<feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.25"/>' +
+        '</filter>' +
+      '</defs>' +
 
-        var promise = animatePolyline({
-          element: workerEl,
-          points: pathPoints,
-          delay: idx * 260,
-          duration: 2400 + idx * 120,
-          hatColor: hat,
-          itemColor: item.color,
-          facing: type === 'in' ? 1 : (pathPoints[0][0] > pathPoints[pathPoints.length - 1][0] ? -1 : 1),
-          carrying: true
-        });
+      // Terreno exterior
+      '<rect width="960" height="720" fill="var(--page)"/>' +
 
-        promises.push(promise);
-      })(i);
+      // ----------------------------------------------------
+      // LA NAVE ARQUITECTÓNICA (LOCAL -5 DE BLUE BANK)
+      // ----------------------------------------------------
+      '<g id="nave-local-5" filter="url(#buildingShadow)">' +
+        // Suelo interior
+        '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="var(--floor)"/>' +
+        '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="url(#slab-grid)"/>' +
+
+        // Muros de carga perimetrales (12px de grosor)
+        '<rect x="' + bx + '" y="' + by + '" width="' + bw + '" height="' + bh + '" fill="none" stroke="#252f2b" stroke-width="12" rx="4"/>' +
+        '<rect x="' + (bx + 6) + '" y="' + (by + 6) + '" width="' + (bw - 12) + '" height="' + (bh - 12) + '" fill="none" stroke="var(--line-strong)" stroke-width="1.5"/>' +
+
+        // Rótulo del edificio en pared superior
+        '<text x="' + (bx + bw / 2) + '" y="' + (by + 20) + '" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="var(--muted)" letter-spacing="2">' +
+          'BLUE BANK · LOCAL -5 STOCKAGE (PLAN DE DISPOSITION : STOCKAGE & ÉLECTRIQUE)' +
+        '</text>' +
+
+        // ----------------------------------------------------
+        // PASILLO CENTRAL (COULOIR CENTRAL - DÉGAGEMENT OBLIGATOIRE)
+        // ----------------------------------------------------
+        '<g id="couloir-central">' +
+          // Franja del pasillo central
+          '<rect x="410" y="' + (by + 28) + '" width="120" height="' + (bh - 40) + '" fill="var(--surface-2)" opacity="0.6"/>' +
+          // Bandas laterales de seguridad amarilla
+          '<line x1="410" y1="' + (by + 28) + '" x2="410" y2="' + (by + bh - 12) + '" stroke="var(--yellow)" stroke-width="3" stroke-dasharray="10 8"/>' +
+          '<line x1="530" y1="' + (by + 28) + '" x2="530" y2="' + (by + bh - 12) + '" stroke="var(--yellow)" stroke-width="3" stroke-dasharray="10 8"/>' +
+          // Marcas de suelo
+          '<text x="470" y="320" text-anchor="middle" font-family="monospace" font-size="9" font-weight="bold" fill="var(--muted)" letter-spacing="1">' +
+            '▲ COULOIR CENTRAL ▲' +
+          '</text>' +
+          '<text x="470" y="335" text-anchor="middle" font-family="monospace" font-size="7.5" font-weight="bold" fill="var(--orange)" letter-spacing="1">' +
+            'ZONE CRITIQUE : DÉGAGEMENT PERMANENT' +
+          '</text>' +
+          '<text x="470" y="440" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="var(--muted)" letter-spacing="1">' +
+            'PRIORITÉ CIRCULATION NOMITOS' +
+          '</text>' +
+        '</g>' +
+
+        // ----------------------------------------------------
+        // ACCESO MUELLE A (ENTRÉE DU LOCAL / CAMION)
+        // ----------------------------------------------------
+        '<g id="gate-dock-in" transform="translate(18, 170)">' +
+          '<rect x="0" y="0" width="45" height="110" fill="#202a26" stroke="var(--teal)" stroke-width="2"/>' +
+          '<rect x="0" y="10" width="30" height="90" fill="url(#hazard-stripes)"/>' +
+          '<circle cx="22" cy="55" r="7" fill="var(--teal)" class="pulse"/>' +
+          '<text x="8" y="-8" font-family="monospace" font-size="9" font-weight="bold" fill="var(--teal)">PORTE ENTRÉE</text>' +
+        '</g>' +
+
+        // Camión descargando en Muelle A
+        '<g id="truck-graphic" transform="translate(5, 175)">' +
+          '<rect x="-8" y="12" width="22" height="74" rx="2" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5"/>' +
+          '<rect x="-4" y="24" width="14" height="50" fill="var(--teal)" opacity="0.8"/>' +
+          '<text x="3" y="52" font-family="monospace" font-size="7" font-weight="bold" fill="#fff" transform="rotate(90 3 52)">LIVRAISON</text>' +
+        '</g>' +
+
+        // Buró de entrada: Faustino
+        '<g id="desk-faustino" transform="translate(85, 175)">' +
+          '<rect width="70" height="70" rx="3" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
+          '<rect x="6" y="8" width="26" height="20" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>' +
+          '<path d="M10 14h18M10 19h14M10 24h16" stroke="var(--teal)" stroke-width="1.5"/>' +
+          '<rect x="36" y="10" width="26" height="18" fill="#1b2420" rx="1"/>' +
+          '<rect x="38" y="12" width="22" height="14" fill="var(--teal)" opacity="0.75"/>' +
+          '<text x="35" y="48" text-anchor="middle" font-size="8" font-family="monospace" font-weight="bold" fill="var(--ink)">BURÓ ENTRADA</text>' +
+          '<text x="35" y="58" text-anchor="middle" font-size="6.5" font-family="monospace" fill="var(--muted)">Faustino (Sello)</text>' +
+        '</g>' +
+
+        // ----------------------------------------------------
+        // ACCESO MUELLE B (EXPÉDITION / FURGONETA)
+        // ----------------------------------------------------
+        '<g id="gate-dock-out" transform="translate(875, 460)">' +
+          '<rect x="0" y="0" width="45" height="110" fill="#202a26" stroke="var(--orange)" stroke-width="2"/>' +
+          '<rect x="15" y="10" width="30" height="90" fill="url(#hazard-stripes)"/>' +
+          '<circle cx="22" cy="55" r="7" fill="var(--orange)" class="pulse"/>' +
+          '<text x="4" y="-8" font-family="monospace" font-size="9" font-weight="bold" fill="var(--orange)">PORTE EXPÉDITION</text>' +
+        '</g>' +
+
+        // Furgoneta de salida en Muelle B
+        '<g id="van-graphic" transform="translate(900, 465)">' +
+          '<rect x="2" y="12" width="20" height="70" rx="2" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5"/>' +
+          '<rect x="4" y="22" width="14" height="48" fill="var(--orange)" opacity="0.8"/>' +
+          '<text x="11" y="48" font-family="monospace" font-size="6.5" font-weight="bold" fill="#fff" transform="rotate(90 11 48)">ENLÈVEMENT</text>' +
+        '</g>' +
+
+        // Buró de salida: Gaspar
+        '<g id="desk-gaspar" transform="translate(775, 480)">' +
+          '<rect width="70" height="70" rx="3" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
+          '<rect x="38" y="8" width="26" height="20" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>' +
+          '<path d="M42 14h18M42 19h14M42 24h16" stroke="var(--orange)" stroke-width="1.5"/>' +
+          '<rect x="8" y="10" width="26" height="18" fill="#1b2420" rx="1"/>' +
+          '<rect x="10" y="12" width="22" height="14" fill="var(--orange)" opacity="0.75"/>' +
+          '<text x="35" y="48" text-anchor="middle" font-size="8" font-family="monospace" font-weight="bold" fill="var(--ink)">BURÓ SALIDA</text>' +
+          '<text x="35" y="58" text-anchor="middle" font-size="6.5" font-family="monospace" fill="var(--muted)">Gaspar (Expedición)</text>' +
+        '</g>' +
+
+        // Capa dinámica para todas las zonas de almacenamiento
+        '<g id="zones-layer"></g>' +
+
+        // Capa de los nomitos activos (vida permanente + misiones)
+        '<g id="active-gnomes-layer"></g>' +
+
+        // Alerta de congestión física del pasillo central
+        '<g id="hazard-warning-sign" transform="translate(320, 32)" opacity="0" style="transition:opacity 0.4s ease">' +
+          '<rect width="320" height="34" rx="4" fill="#bf3c32"/>' +
+          '<text x="160" y="21" text-anchor="middle" font-family="monospace" font-size="10.5" font-weight="bold" fill="#ffffff">' +
+            '⚠️ ATTENTION : COULOIR CENTRAL ENCOMBRÉ !' +
+          '</text>' +
+        '</g>' +
+      '</g>';
+
+    svgEl.innerHTML = html;
+    movingLayer = svgEl.querySelector('#active-gnomes-layer');
+  }
+
+  /**
+   * Dibuja los anaqueles y zonas del plano real de Blue Bank
+   */
+  function renderAllWarehouseZones() {
+    var zonesLayer = svgEl.querySelector('#zones-layer');
+    if (!zonesLayer) return;
+
+    var metrics = Engine.ledger.getMetrics();
+    var items = Engine.ledger.items;
+
+    var html = '' +
+      // ======================================================================
+      // 1. ZONA FONDO: EXPÉDITION CARTONS STREFF & ARCHIVES (-6 / -7)
+      // ======================================================================
+      renderZoneModule({
+        id: 'zone-streff',
+        x: 290,
+        y: 45,
+        w: 180,
+        h: 90,
+        title: 'EXPÉDITION STREFF',
+        tag: '15+ CARTONS',
+        color: '#e3b341',
+        items: items.filter(function(i) { return i.zone === 'fond' && i.sku.startsWith('STR'); }),
+        visualType: 'streff'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-archive',
+        x: 490,
+        y: 45,
+        w: 180,
+        h: 90,
+        title: 'FOND ARCHIVE -6/-7',
+        tag: 'SACS CONFIDENTIEL',
+        color: '#f85149',
+        items: items.filter(function(i) { return i.zone === 'fond' && i.sku.startsWith('ARC'); }),
+        visualType: 'archive'
+      }) +
+
+      // ======================================================================
+      // 2. FILA IZQUIERDA (CÔTÉ GAUCHE : MURAL, TEXAA, BULLE, ÉLECTRIQUE)
+      // ======================================================================
+      renderZoneModule({
+        id: 'zone-vert',
+        x: 60,
+        y: 260,
+        w: 140,
+        h: 95,
+        title: 'RAYONNAGE VERT',
+        tag: 'MATÉRIEL DIVERS',
+        color: '#2ea043',
+        items: items.filter(function(i) { return i.sku === 'MUR-VERT'; }),
+        visualType: 'metal_rack'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-texaa',
+        x: 60,
+        y: 370,
+        w: 140,
+        h: 95,
+        title: 'PANNEAUX TEXAA',
+        tag: 'ACOUSTIQUE',
+        color: '#ff7b72',
+        items: items.filter(function(i) { return i.sku === 'MUR-TEXAA'; }),
+        visualType: 'texaa'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-bulle',
+        x: 60,
+        y: 480,
+        w: 140,
+        h: 95,
+        title: 'ZONE ÉTROITE',
+        tag: 'SOUS BULLE',
+        color: '#3fb950',
+        items: items.filter(function(i) { return i.sku === 'MUR-BULLE'; }),
+        visualType: 'table_top'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-elec',
+        x: 60,
+        y: 590,
+        w: 140,
+        h: 95,
+        title: 'LOCAL ÉLECTRIQUE',
+        tag: 'CÂBLES & RADIATEUR',
+        color: '#d29922',
+        items: items.filter(function(i) { return i.zone === 'gauche' && i.sku.startsWith('ELEC'); }),
+        visualType: 'electric'
+      }) +
+
+      // ======================================================================
+      // 3. FILA DERECHA (CÔTÉ DROIT : MOBILIER, SIT-STAND, SIÈGES, ARMOIRE)
+      // ======================================================================
+      renderZoneModule({
+        id: 'zone-sitstand',
+        x: 740,
+        y: 60,
+        w: 155,
+        h: 95,
+        title: 'BUREAUX SIT-STAND',
+        tag: '2 STRUCTURES MÉTAL',
+        color: '#79c0ff',
+        items: items.filter(function(i) { return i.sku === 'MOB-SITSTAND'; }),
+        visualType: 'sit_stand'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-sieges',
+        x: 740,
+        y: 170,
+        w: 155,
+        h: 95,
+        title: 'SIÈGES ERGONOMIQUES',
+        tag: '5 SIÈGES BUREAU',
+        color: '#58a6ff',
+        items: items.filter(function(i) { return i.sku === 'MOB-SIEGES' || i.sku === 'MOB-TABOURETS'; }),
+        visualType: 'chairs'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-bucks',
+        x: 740,
+        y: 280,
+        w: 155,
+        h: 95,
+        title: 'CAISSONS & BUCKS',
+        tag: 'STOCKAGE BAS',
+        color: '#a5d6ff',
+        items: items.filter(function(i) { return i.sku === 'MOB-BUCKS'; }),
+        visualType: 'bucks'
+      }) +
+
+      renderZoneModule({
+        id: 'zone-armoire',
+        x: 740,
+        y: 390,
+        w: 155,
+        h: 80,
+        title: 'ARMOIRE & RACKS INFO',
+        tag: 'SERVEUR / MÉTAL',
+        color: '#8b949e',
+        items: items.filter(function(i) { return i.sku === 'MOB-ARMOIRE'; }),
+        visualType: 'cabinet'
+      }) +
+
+      // ======================================================================
+      // 4. VRAC & ACCESSOIRES (PASILLO INFERIOR DERECHO)
+      // ======================================================================
+      renderZoneModule({
+        id: 'zone-vrac',
+        x: 580,
+        y: 575,
+        w: 175,
+        h: 110,
+        title: 'VRAC & ACCESSOIRES',
+        tag: 'PORTE-PLANS & BACS',
+        color: '#bc8cff',
+        items: items.filter(function(i) { return i.zone === 'vrac'; }),
+        visualType: 'vrac'
+      });
+
+    zonesLayer.innerHTML = html;
+
+    // Actualizar advertencia del pasillo central
+    var warnSign = svgEl.querySelector('#hazard-warning-sign');
+    if (warnSign) {
+      warnSign.setAttribute('opacity', metrics.isCongested ? '1' : '0');
+    }
+  }
+
+  /**
+   * Genera el módulo visual de una zona con objetos reales dibujados
+   */
+  function renderZoneModule(cfg) {
+    var totalStock = cfg.items.reduce(function(acc, i) { return acc + i.stock; }, 0);
+    var totalCap = cfg.items.reduce(function(acc, i) { return acc + i.capacity; }, 0);
+    var percent = totalCap > 0 ? Math.min(100, Math.round((totalStock / totalCap) * 100)) : 0;
+
+    // Representación visual detallada de los objetos de Blue Bank
+    var visualObjects = '';
+
+    if (cfg.visualType === 'streff') {
+      // Cajas STREFF World Wide Moving doradas con texto
+      var boxCount = Math.min(10, Math.ceil(totalStock * 0.6));
+      for (var b = 0; b < boxCount; b++) {
+        var bx = cfg.x + 12 + (b % 5) * 32;
+        var by = cfg.y + 34 + Math.floor(b / 5) * 24;
+        visualObjects += '<g transform="translate(' + bx + ',' + by + ')">' +
+          '<rect width="28" height="20" rx="1.5" fill="#e3b341" stroke="#5a4115" stroke-width="1"/>' +
+          '<text x="14" y="11" font-size="6.5" font-family="monospace" text-anchor="middle" font-weight="bold" fill="#3f2d12">STREFF</text>' +
+          '<line x1="0" y1="13" x2="28" y2="13" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>' +
+          '</g>';
+      }
+    } else if (cfg.visualType === 'texaa') {
+      // Paneles acústicos Texaa rojizos alineados verticalmente
+      var pCount = Math.min(8, totalStock);
+      for (var p = 0; p < pCount; p++) {
+        var px = cfg.x + 10 + p * 15;
+        visualObjects += '<g transform="translate(' + px + ',' + (cfg.y + 34) + ')">' +
+          '<rect width="11" height="46" rx="2" fill="#ff7b72" stroke="#8b2c24" stroke-width="0.8"/>' +
+          '<line x1="3" y1="4" x2="3" y2="42" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>' +
+          '<text x="5.5" y="26" font-size="5" font-family="monospace" text-anchor="middle" fill="#fff" transform="rotate(90 5.5 26)">TEXAA</text>' +
+          '</g>';
+      }
+    } else if (cfg.visualType === 'chairs') {
+      // Sillas ergonómicas con ruedas y respaldo
+      var chairCount = Math.min(5, totalStock);
+      for (var c = 0; c < chairCount; c++) {
+        var cx = cfg.x + 12 + c * 27;
+        var cy = cfg.y + 40;
+        visualObjects += '<g transform="translate(' + cx + ',' + cy + ')">' +
+          '<circle cx="10" cy="10" r="8" fill="#58a6ff" stroke="#1f4f82" stroke-width="1"/>' +
+          '<circle cx="10" cy="10" r="3" fill="#202a26"/>' +
+          '<path d="M4 10 L16 10" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>' +
+          '<circle cx="5" cy="22" r="2" fill="#333"/><circle cx="15" cy="22" r="2" fill="#333"/>' +
+          '</g>';
+      }
+    } else if (cfg.visualType === 'sit_stand') {
+      // Mesas Sit-Stand ergonómicas con motor
+      var sCount = Math.min(2, totalStock);
+      for (var s = 0; s < sCount; s++) {
+        var sx = cfg.x + 14 + s * 66;
+        var sy = cfg.y + 36;
+        visualObjects += '<g transform="translate(' + sx + ',' + sy + ')">' +
+          '<rect width="58" height="12" rx="1.5" fill="#f7f9f8" stroke="#333" stroke-width="1.2"/>' +
+          '<line x1="8" y1="12" x2="8" y2="44" stroke="#79c0ff" stroke-width="3"/>' +
+          '<line x1="50" y1="12" x2="50" y2="44" stroke="#79c0ff" stroke-width="3"/>' +
+          '<rect x="24" y="14" width="10" height="7" rx="1" fill="#1b2420"/>' +
+          '<text x="29" y="19" font-size="5" text-anchor="middle" fill="#79c0ff">M</text>' +
+          '</g>';
+      }
+    } else {
+      // Cajas genéricas organizadas en estante
+      var gCount = Math.min(8, totalStock);
+      for (var g = 0; g < gCount; g++) {
+        var gx = cfg.x + 14 + (g % 4) * 28;
+        var gy = cfg.y + 36 + Math.floor(g / 4) * 24;
+        visualObjects += '<rect x="' + gx + '" y="' + gy + '" width="22" height="18" rx="2" fill="' + cfg.color + '" stroke="#27342f" stroke-width="0.8" opacity="0.9"/>';
+      }
     }
 
-    return Promise.all(promises).then(function() {
-      renderRacks();
+    return '' +
+      '<g id="' + cfg.id + '">' +
+        // Marco de la zona
+        '<rect x="' + cfg.x + '" y="' + cfg.y + '" width="' + cfg.w + '" height="' + cfg.h + '" rx="4" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5"/>' +
+        // Barra de título de la zona
+        '<rect x="' + cfg.x + '" y="' + cfg.y + '" width="' + cfg.w + '" height="22" fill="var(--surface-2)"/>' +
+        '<line x1="' + cfg.x + '" y1="' + (cfg.y + 22) + '" x2="' + (cfg.x + cfg.w) + '" y2="' + (cfg.y + 22) + '" stroke="var(--line)" stroke-width="1"/>' +
+        '<text x="' + (cfg.x + 8) + '" y="' + (cfg.y + 14) + '" font-family="monospace" font-size="8.5" font-weight="bold" fill="var(--ink)">' +
+          cfg.title +
+        '</text>' +
+        '<text x="' + (cfg.x + cfg.w - 8) + '" y="' + (cfg.y + 14) + '" text-anchor="end" font-family="monospace" font-size="7" font-weight="bold" fill="' + cfg.color + '">' +
+          cfg.tag +
+        '</text>' +
+        // Objetos físicos reales visibles
+        visualObjects +
+        // Barra inferior de capacidad
+        '<rect x="' + (cfg.x + 8) + '" y="' + (cfg.y + cfg.h - 8) + '" width="' + (cfg.w - 16) + '" height="4" fill="var(--line)" rx="1"/>' +
+        '<rect x="' + (cfg.x + 8) + '" y="' + (cfg.y + cfg.h - 8) + '" width="' + ((cfg.w - 16) * percent / 100) + '" height="4" fill="' + cfg.color + '" rx="1"/>' +
+      '</g>';
+  }
+
+  /**
+   * Renderiza a todos los nomitos activos (Faustino, Gaspar, Tito, Bruno, Pepe, Nico, Blas)
+   */
+  function renderActiveGnomes() {
+    if (!movingLayer) return;
+
+    // Solo dibujamos los nomitos que no estén en misión prioritaria de transporte
+    var html = gnomesSquad.map(function(nomito) {
+      if (nomito.state === 'mission') return '';
+      return nomito.render();
+    }).join('');
+
+    movingLayer.innerHTML = html;
+  }
+
+  /**
+   * Ejecuta una misión de transporte activa cuando el usuario registra un movimiento
+   */
+  function dispatchGnomeMovement(mission) {
+    return new Promise(function(resolve) {
+      var item = mission.item;
+      var type = mission.type;
+      var count = mission.gnomeCount || 2;
+
+      // Destino en el almacén según el artículo
+      var targetCoords = WAYPOINTS.rackTexaa;
+      if (item.sku === 'MUR-VERT') targetCoords = WAYPOINTS.rackVert;
+      else if (item.sku === 'MUR-BULLE') targetCoords = WAYPOINTS.rackBulle;
+      else if (item.sku.startsWith('ELEC')) targetCoords = WAYPOINTS.rackElec;
+      else if (item.sku === 'MOB-SITSTAND') targetCoords = WAYPOINTS.rackSitstand;
+      else if (item.sku === 'MOB-SIEGES' || item.sku === 'MOB-TABOURETS') targetCoords = WAYPOINTS.rackSieges;
+      else if (item.sku === 'MOB-BUCKS') targetCoords = WAYPOINTS.rackBucks;
+      else if (item.sku === 'MOB-ARMOIRE') targetCoords = WAYPOINTS.rackArmoire;
+      else if (item.sku.startsWith('STR')) targetCoords = WAYPOINTS.zoneStreff;
+      else if (item.sku.startsWith('ARC')) targetCoords = WAYPOINTS.zoneArchive;
+      else if (item.zone === 'vrac') targetCoords = [660, 610];
+
+      // Ponemos a Pepe y Nico en estado 'mission' para el transporte prioritario
+      var carriers = gnomesSquad.filter(function(g) { return g.role === 'carrier'; });
+      carriers.forEach(function(c) { c.state = 'mission'; });
+
+      var promises = [];
+      for (var i = 0; i < count; i++) {
+        (function(idx) {
+          var workerEl = document.createElementNS(NS, 'g');
+          workerEl.setAttribute('class', 'mission-worker');
+          svgEl.querySelector('#nave-local-5').appendChild(workerEl);
+
+          var pathPoints = [];
+          if (type === 'in') {
+            // ENTRADA: Gate In -> Buró Faustino -> Pasillo Central -> Anaquel destino
+            pathPoints = [
+              [WAYPOINTS.gateIn[0], WAYPOINTS.gateIn[1] + idx * 8],
+              [WAYPOINTS.bureauIn[0] + idx * 6, WAYPOINTS.bureauIn[1] + 10],
+              [WAYPOINTS.couloirCentre[0], WAYPOINTS.couloirCentre[1] + (idx * 20 - 10)],
+              [targetCoords[0] + (idx * 16 - 8), targetCoords[1] + 20]
+            ];
+          } else {
+            // SALIDA: Anaquel origen -> Pasillo Central -> Buró Gaspar -> Gate Out
+            pathPoints = [
+              [targetCoords[0] + (idx * 16 - 8), targetCoords[1] + 20],
+              [WAYPOINTS.couloirCentre[0], WAYPOINTS.couloirCentre[1] + (idx * 20 - 10)],
+              [WAYPOINTS.bureauOut[0] - idx * 6, WAYPOINTS.bureauOut[1] + 10],
+              [WAYPOINTS.gateOut[0], WAYPOINTS.gateOut[1] + idx * 8]
+            ];
+          }
+
+          var p = animateMissionGnome({
+            element: workerEl,
+            points: pathPoints,
+            delay: idx * 240,
+            duration: 2500 + idx * 120,
+            hatColor: idx % 2 === 0 ? '#e55d23' : '#f4b942',
+            itemColor: item.color,
+            facing: type === 'in' ? 1 : -1
+          });
+          promises.push(p);
+        })(i);
+      }
+
+      Promise.all(promises).then(function() {
+        carriers.forEach(function(c) { c.state = 'idle'; });
+        renderAllWarehouseZones();
+        resolve();
+      });
     });
   }
 
-  function animatePolyline(options) {
+  function animateMissionGnome(opt) {
     return new Promise(function(resolve) {
-      var el = options.element;
-      var pts = options.points;
-      var delay = options.delay || 0;
-      var duration = options.duration || 2000;
-      var startTime = null;
+      var el = opt.element;
+      var pts = opt.points;
+      var delay = opt.delay || 0;
+      var duration = opt.duration || 2400;
+      var start = null;
 
-      // Calcular longitudes de segmento
+      // Longitudes
       var lengths = [];
       var totalLen = 0;
       for (var i = 1; i < pts.length; i++) {
@@ -416,51 +600,45 @@ window.NOMITOS_WAREHOUSE = (function(Data, Agents, Engine) {
         totalLen += len;
       }
 
-      function getInterpolatedPoint(t) {
-        var targetDist = t * totalLen;
-        var accumulated = 0;
+      function getPt(t) {
+        var target = t * totalLen;
+        var acc = 0;
         for (var j = 0; j < lengths.length; j++) {
-          if (accumulated + lengths[j] >= targetDist) {
-            var frac = (targetDist - accumulated) / lengths[j];
+          if (acc + lengths[j] >= target) {
+            var frac = (target - acc) / lengths[j];
             var p0 = pts[j];
             var p1 = pts[j + 1];
             return [p0[0] + (p1[0] - p0[0]) * frac, p0[1] + (p1[1] - p0[1]) * frac];
           }
-          accumulated += lengths[j];
+          acc += lengths[j];
         }
         return pts[pts.length - 1];
       }
 
-      function step(timestamp) {
-        if (!startTime) startTime = timestamp;
-        var elapsed = timestamp - startTime - delay;
+      function step(ts) {
+        if (!start) start = ts;
+        var elapsed = ts - start - delay;
+        if (elapsed < 0) { requestAnimationFrame(step); return; }
 
-        if (elapsed < 0) {
-          requestAnimationFrame(step);
-          return;
-        }
-
-        var progress = Math.max(0, Math.min(1, elapsed / duration));
-        // Easing suave (quad)
-        var eased = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-        var pt = getInterpolatedPoint(eased);
-
-        // Bamboleo vertical realista (bobbing de caminar con peso)
-        var bob = Math.sin(progress * Math.PI * 14) * 2.8;
+        var raw = Math.max(0, Math.min(1, elapsed / duration));
+        var eased = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
+        var pos = getPt(eased);
+        var bob = Math.sin(raw * Math.PI * 14) * 2.8;
 
         el.innerHTML = Agents.createGnomeSVG({
-          x: pt[0],
-          y: pt[1] + bob,
+          x: pos[0],
+          y: pos[1] + bob,
           scale: 0.74,
-          hatColor: options.hatColor,
-          beardColor: '#f7efe4',
+          hatColor: opt.hatColor,
+          beardColor: '#ffffff',
           carrying: true,
           expression: 'straining',
-          itemColor: options.itemColor,
-          facing: options.facing
+          itemColor: opt.itemColor,
+          facing: opt.facing,
+          walkFrame: raw * 20
         });
 
-        if (progress < 1) {
+        if (raw < 1) {
           requestAnimationFrame(step);
         } else {
           el.remove();
@@ -473,18 +651,18 @@ window.NOMITOS_WAREHOUSE = (function(Data, Agents, Engine) {
   }
 
   function setupEventListeners() {
-    Engine.EventBus.on('stock:changed', function(data) {
-      renderRacks();
+    Engine.EventBus.on('stock:changed', function() {
+      renderAllWarehouseZones();
     });
 
     Engine.EventBus.on('ledger:reset', function() {
-      renderRacks();
+      renderAllWarehouseZones();
     });
   }
 
   return {
     init: init,
-    renderRacks: renderRacks,
+    renderAllWarehouseZones: renderAllWarehouseZones,
     dispatchGnomeMovement: dispatchGnomeMovement
   };
 })(window.NOMITOS_DATA, window.NOMITOS_AGENTS, window.NOMITOS_ENGINE);

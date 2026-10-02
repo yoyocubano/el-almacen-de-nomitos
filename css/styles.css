@@ -21,6 +21,8 @@
   --yellow: #f4b942;
   --red: #bf3c32;
   --red-soft: #ffebe9;
+  --green: #2ea043;
+  --green-soft: #dafbe1;
   --warehouse: #dbe1de;
   --shelf: #57635f;
   --floor: #d6dcda;
@@ -44,9 +46,11 @@
     --yellow: #f5c65d;
     --red: #ff756b;
     --red-soft: #3e1b18;
-    --warehouse: #252f2b;
+    --green: #3fb950;
+    --green-soft: #143521;
+    --warehouse: #222a27;
     --shelf: #7f9189;
-    --floor: #202925;
+    --floor: #1d2522;
     --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
   }
 }
@@ -214,11 +218,50 @@ button, input, select { font: inherit; color: inherit; }
   font-weight: 500;
 }
 
+/* BANNER DE SEGURIDAD DEL PASILLO CENTRAL */
+.security-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 0.72rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.green { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.status-dot.red { background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); animation: pulse 1s infinite; }
+
+/* VOLÚMENES DESTACADOS */
+.volume-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 18px 4px;
+  background: var(--surface);
+}
+
+.vol-chip {
+  font: 600 0.65rem "IBM Plex Mono", monospace;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+
 /* FILTROS DE ZONA */
 .zone-filters {
   display: flex;
   gap: 6px;
-  padding: 10px 18px 0;
+  padding: 8px 18px 0;
   overflow-x: auto;
 }
 
@@ -243,7 +286,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* TABLA DE INVENTARIO (SPREADSHEET) */
 .inventory {
-  padding: 14px 18px 0;
+  padding: 12px 18px 0;
   flex: 1;
 }
 
@@ -251,7 +294,7 @@ button, input, select { font: inherit; color: inherit; }
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .section-title h3 {
@@ -266,7 +309,7 @@ button, input, select { font: inherit; color: inherit; }
 
 .table-wrap {
   overflow-y: auto;
-  max-height: 250px;
+  max-height: 220px;
   border: 1px solid var(--line);
   background: var(--surface);
 }
@@ -286,19 +329,19 @@ button, input, select { font: inherit; color: inherit; }
   font: 600 0.62rem/1 "IBM Plex Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  padding: 9px 8px;
+  padding: 8px 8px;
   border-bottom: 1px solid var(--line);
   z-index: 2;
 }
 
 .stock-table th:nth-child(2) { text-align: center; width: 68px; }
-.stock-table th:nth-child(3) { width: 90px; }
+.stock-table th:nth-child(3) { width: 88px; }
 .stock-table th:nth-child(4) { text-align: center; width: 55px; }
 
 .stock-table td {
-  padding: 9px 8px;
+  padding: 8px 8px;
   border-bottom: 1px solid var(--line);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   vertical-align: middle;
 }
 
@@ -329,7 +372,7 @@ button, input, select { font: inherit; color: inherit; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
 }
 
 .product small {
@@ -405,8 +448,8 @@ button, input, select { font: inherit; color: inherit; }
 
 /* FORMULARIO DE ALBARÁN Y MOVIMIENTO */
 .movement {
-  margin: 14px 18px 0;
-  padding: 14px;
+  margin: 12px 18px 0;
+  padding: 12px;
   background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -416,7 +459,7 @@ button, input, select { font: inherit; color: inherit; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .movement-header h3 {
@@ -509,7 +552,7 @@ select:focus, input:focus {
 
 /* BITÁCORA / REPORTES RECIENTES */
 .event-log {
-  padding: 14px 18px 18px;
+  padding: 12px 18px 16px;
   margin-top: auto;
 }
 
@@ -570,9 +613,9 @@ select:focus, input:focus {
 
 .warehouse-head {
   position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 16px;
+  left: 20px;
+  right: 20px;
+  top: 14px;
   z-index: 3;
   display: flex;
   align-items: flex-start;
@@ -582,7 +625,7 @@ select:focus, input:focus {
 
 .warehouse-head h2 {
   font-size: 0.95rem;
-  margin: 0 0 3px;
+  margin: 0 0 2px;
 }
 
 .warehouse-head p {
@@ -608,15 +651,6 @@ select:focus, input:focus {
   min-height: 700px;
 }
 
-.zone-label {
-  font: 700 10px "IBM Plex Mono", monospace;
-  letter-spacing: 0.06em;
-}
-
-.tiny-label {
-  font: 600 8px "IBM Plex Mono", monospace;
-}
-
 .pulse {
   animation: pulse 1.6s ease-in-out infinite;
   transform-box: fill-box;
@@ -633,7 +667,7 @@ select:focus, input:focus {
   right: 16px;
   background: var(--surface);
   border: 1px solid var(--line);
-  padding: 7px 10px;
+  padding: 7px 11px;
   display: flex;
   gap: 12px;
   font-size: 0.62rem;
@@ -655,6 +689,13 @@ select:focus, input:focus {
   background: var(--teal);
 }
 .legend i.out { background: var(--orange); }
+
+.dot-couloir {
+  width: 8px;
+  height: 8px;
+  background: var(--yellow);
+  border-radius: 50%;
+}
 
 .toast {
   position: absolute;

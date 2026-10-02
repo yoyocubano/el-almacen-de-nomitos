@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>" />
-  <title>El Almacén de Nomito — Gestión Logística & Gemelo Activo</title>
+  <title>El Almacén de Nomito — Local -5 Blue Bank (Gemelo Activo v2)</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,10 +19,10 @@
     <header class="topline">
       <div class="brand-badge">
         <h1>El Almacén de Nomito</h1>
-        <span class="tag-version">v1.0 GEMELO ACTIVO</span>
+        <span class="tag-version">v2.0 GEMELO VIVO</span>
       </div>
       <div class="live">
-        <i></i><span id="clock">LOCAL -5 STOCKAGE</span>
+        <i></i><span id="clock">LOCAL -5 STOCKAGE & ÉLECTRIQUE</span>
       </div>
       <nav class="mobile-switch" aria-label="Cambiar vista en móvil">
         <button class="active" data-target="control">01 · Datos</button>
@@ -38,47 +38,61 @@
         <div class="panel-head">
           <div>
             <p class="eyebrow">Pantalla 01 · Libro de existencias</p>
-            <h2 id="control-title">Inventaire Local Stockage (-5)</h2>
+            <h2 id="control-title">Local -5 : Stockage & Électrique</h2>
           </div>
-          <span class="source-badge">BLUE BANK DATA</span>
+          <span class="source-badge">PLAN DE DISPOSITION</span>
         </div>
 
-        <!-- TARJETAS DE SITUACIÓN -->
+        <!-- TARJETAS DE SITUACIÓN Y VOLÚMENES DESTACADOS -->
         <div class="metrics" aria-label="Resumen de inventario">
           <div class="metric">
             <span>Stock total</span>
             <strong id="total-units">0</strong>
           </div>
           <div class="metric">
-            <span>Ocupación global</span>
+            <span>Ocupación nave</span>
             <strong id="occupancy">0<em>%</em></strong>
           </div>
           <div class="metric">
             <span>Cuadrilla activa</span>
-            <strong id="workers-count">6 <em>nomitos</em></strong>
+            <strong id="workers-count">7 <em>nomitos</em></strong>
           </div>
         </div>
 
-        <!-- FILTROS POR ZONA FÍSICA -->
+        <!-- NOTA DE SEGURIDAD CRÍTICA DEL PLANO -->
+        <div class="security-banner" id="corridor-status">
+          <span class="status-dot green"></span>
+          <b>PASILLO CENTRAL DESPEJADO</b> (Circulación normal)
+        </div>
+
+        <!-- RESUMEN DE VOLÚMENES REALES DEL PLANO -->
+        <div class="volume-chips">
+          <span class="vol-chip">🪑 5 Sièges ergo</span>
+          <span class="vol-chip">⚡ 2 Sit-Stand</span>
+          <span class="vol-chip">📦 15+ Cartons Streff</span>
+          <span class="vol-chip">🧱 Panneaux Texaa</span>
+        </div>
+
+        <!-- FILTROS POR FILA Y ZONA DEL PLANO -->
         <div class="zone-filters" role="tablist" aria-label="Filtro de zonas">
-          <button class="filter-pill active" data-zone="all" type="button">Todas las zonas</button>
-          <button class="filter-pill" data-zone="mural" type="button">Mural (Izquierdo)</button>
-          <button class="filter-pill" data-zone="mobilier" type="button">Mobilier (Derecho)</button>
-          <button class="filter-pill" data-zone="fond" type="button">Logistique (Fondo)</button>
-          <button class="filter-pill" data-zone="vrac" type="button">Vrac & Acc.</button>
+          <button class="filter-pill active" data-zone="all" type="button">Todo el plano</button>
+          <button class="filter-pill" data-zone="gauche" type="button">Fila Izq. (Mural & Élec)</button>
+          <button class="filter-pill" data-zone="droite" type="button">Fila Der. (Mobilier & Info)</button>
+          <button class="filter-pill" data-zone="fond" type="button">Fondo (Streff & Archive)</button>
+          <button class="filter-pill" data-zone="vrac" type="button">Vrac</button>
         </div>
 
         <!-- TABLA DE INVENTARIO (SPREADSHEET CON DIFERENCIAS REPORTADAS) -->
         <div class="inventory">
           <div class="section-title">
-            <h3>Existencias por ubicación</h3>
-            <span>Reporte de diferencias (+ / −)</span>
+            <h3>Inventario por subzona del local</h3>
+            <span>Reporte diferencias (+ / −)</span>
           </div>
           <div class="table-wrap">
             <table class="stock-table">
               <thead>
                 <tr>
-                  <th>Artículo / Zona</th>
+                  <th>Artículo / Subzona</th>
                   <th>Stock</th>
                   <th>Capacidad</th>
                   <th>Dif.</th>
@@ -93,18 +107,18 @@
         <form class="movement" id="movement-form" onsubmit="return false;">
           <div class="movement-header">
             <h3>Registrar Albarán de Movimiento</h3>
-            <button class="quick-sim" id="btn-random" type="button">Simular movimiento aleatorio</button>
+            <button class="quick-sim" id="btn-random" type="button">⚡ Simular orden rápida</button>
           </div>
           
           <div class="fields">
             <div>
-              <label for="product-select">Artículo del almacén</label>
+              <label for="product-select">Artículo del plano</label>
               <select id="product-select" aria-label="Seleccionar artículo"></select>
             </div>
             <div>
               <label for="quantity">Cantidad</label>
               <div class="qty-input-wrap">
-                <input id="quantity" type="number" min="1" max="40" value="4" inputmode="numeric" aria-label="Cantidad de unidades" />
+                <input id="quantity" type="number" min="1" max="30" value="3" inputmode="numeric" aria-label="Cantidad de unidades" />
                 <span class="qty-badge" data-qty-add="1">+1</span>
                 <span class="qty-badge" data-qty-add="5">+5</span>
               </div>
@@ -113,10 +127,10 @@
 
           <div class="actions">
             <button class="action in" type="button" id="btn-in" title="Atajo: tecla E">
-              📦 Entrada (Camión → Buró → Anaquel)
+              📦 Entrada (Muelle A → Buró Faustino → Anaquel)
             </button>
             <button class="action out" type="button" id="btn-out" title="Atajo: tecla S">
-              🚚 Salida (Anaquel → Buró → Muelle)
+              🚚 Salida (Anaquel → Buró Gaspar → Muelle B)
             </button>
           </div>
         </form>
@@ -124,7 +138,7 @@
         <!-- BITÁCORA Y DIFERENCIAS RECIENTES -->
         <div class="event-log">
           <div class="section-title">
-            <h3>Diferencias recientes reportadas</h3>
+            <h3>Historial de diferencias (+ / −)</h3>
             <button class="reset" id="reset-demo" type="button">Reiniciar inventario</button>
           </div>
           <ol class="event-list" id="event-list" aria-live="polite"></ol>
@@ -137,20 +151,21 @@
       <section class="panel warehouse-panel" data-screen="warehouse" aria-labelledby="warehouse-title">
         <div class="warehouse-head">
           <div>
-            <p class="eyebrow">Pantalla 02 · Gemelo visual</p>
-            <h2 id="warehouse-title">Operación Espacial del Almacén</h2>
-            <p>Los nomitos ejecutan físicamente cada orden a través de los burós.</p>
+            <p class="eyebrow">Pantalla 02 · Gemelo visual en nave</p>
+            <h2 id="warehouse-title">Plano de Disposition : Stockage & Électrique</h2>
+            <p>Vida permanente: Tito barre el pasillo central, Bruno mueve la transpaleta y los nomitos conversan.</p>
           </div>
-          <div class="status-chip" id="status-chip">ALMACÉN OPERATIVO</div>
+          <div class="status-chip" id="status-chip">ALMACÉN VIVO</div>
         </div>
 
-        <!-- SVG INTERACTIVO DEL PLANO -->
-        <svg id="warehouse" viewBox="0 0 940 720" role="img" aria-label="Plano animado del almacén de nomitos"></svg>
+        <!-- SVG INTERACTIVO DE LA NAVE ARQUITECTÓNICA -->
+        <svg id="warehouse" viewBox="0 0 960 720" role="img" aria-label="Plano de disposition del local -5 con nomitos activos"></svg>
 
-        <!-- LEYENDA -->
+        <!-- LEYENDA DEL PLANO -->
         <div class="legend">
           <span><i></i> Muelle A (Entrada)</span>
-          <span><i class="out"></i> Muelle B (Salida)</span>
+          <span><i class="out"></i> Muelle B (Expedición)</span>
+          <span><span class="dot-couloir"></span> Pasillo Central</span>
         </div>
 
         <!-- NOTIFICACIÓN TOAST -->
