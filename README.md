@@ -12,11 +12,12 @@ Esta versión incorpora el plano esquemático real del local de stockage de Blue
 
 ### 1. Vida Permanente (El almacén nunca se detiene)
 Aunque no se registre ningún movimiento en la hoja de datos, los nomitos continúan su labor:
-- **Tito el Barrendero:** Recorre continuamente el pasillo central con su escoba manteniéndolo limpio y despejado.
-- **Bruno el Fuerte:** Empuja la transpaleta manual cargada con cajas Streff entre pasillos.
-- **Blas el Inspector:** Camina con su portapapeles revisando estantes e inspeccionando stock con iconos de diálogo.
-- **Faustino (Recepción) y Gaspar (Expedición):** En sus respectivos burós sellando y validando albaranes con globos de diálogo interactivos.
-- **Pepe y Nico:** Patrullan y descansan en guardia, listos para correr al muelle cuando entra o sale un pedido.
+- **Ritmo y velocidad digeribles:** Los trabajadores caminan a paso calmado y natural, se detienen, miran los anaqueles y respiran.
+- **Rincón de fumar (`🚬`):** Cerca de la puerta de salida hay un cenicero de pie metálico donde los nomitos se toman descansos con cigarrillos encendidos y volutas de humo.
+- **Máquina de café (`☕`):** En la zona de descanso, los nomitos van a servirse un café caliente con taza humeante.
+- **Encuentros en el pasillo:** Cuando dos nomitos se cruzan, se detienen frente a frente, charlan con bocadillos de diálogo (`💬`, `¡hola!`, `☕`) y luego continúan.
+- **Teléfono fijo en el buró y llamada móvil:** Al llegar mercancía, Faustino levanta el auricular fijo en el buró de recepción (`☎ ¡Ring!`), suena el móvil del nomito (`📱 "¡Al lío!"`), contesta la llamada y la cuadrilla acude coordinadamente.
+- **Estantes organizados y poblados:** Fila izquierda dedicada a *Herramientas & Outillage*, *Plomería & Paneles TEXAA* y *Local Électrique* (bobinas y cables); fila derecha a *Mobilier & Bureaux Sit-Stand* (sillas ergonómicas, cajoneras y armarios); y fondo a *Expédition STREFF* sobre palets de madera.
 
 ### 2. Layout del Plano Real (Nave Cerrada con Muros y Pasillo Central)
 El almacén es la nave arquitectónica del plano, con sus muros perimetrales delimitados y las zonas organizadas en 3 filas y un pasillo central:
