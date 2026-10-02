@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Maqueta del almacén de nomitos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page:#e8ecea;
+      --surface:#f7f9f8;
+      --surface-2:#eef2f0;
+      --ink:#17201d;
+      --muted:#5d6965;
+      --line:#cbd3cf;
+      --line-strong:#9ba8a2;
+      --orange:#e55d23;
+      --orange-soft:#fff0e8;
+      --teal:#007b70;
+      --teal-soft:#dff4ef;
+      --yellow:#f4b942;
+      --red:#bf3c32;
+      --warehouse:#dbe1de;
+      --shelf:#57635f;
+      --floor:#d6dcda;
+      --shadow:0 18px 50px rgba(28,43,37,.12);
+    }
+    @media (prefers-color-scheme:dark){
+      :root{
+        --page:#111714;
+        --surface:#18201d;
+        --surface-2:#202a26;
+        --ink:#edf3ef;
+        --muted:#a9b6b0;
+        --line:#34413c;
+        --line-strong:#5b6a64;
+        --orange:#ff7440;
+        --orange-soft:#3b241b;
+        --teal:#46c8b8;
+        --teal-soft:#173a34;
+        --yellow:#f5c65d;
+        --red:#ff756b;
+        --warehouse:#252f2b;
+        --shelf:#7f9189;
+        --floor:#202925;
+        --shadow:0 18px 60px rgba(0,0,0,.35);
+      }
+    }
+    *{box-sizing:border-box}
+    html{height:100%;background:var(--page)}
+    body{margin:0;min-height:100%;font-family:"IBM Plex Sans",system-ui,sans-serif;background:var(--page);color:var(--ink);overflow-x:hidden}
+    button,input,select{font:inherit}
+    button{color:inherit}
+    .app{min-height:100vh;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .topline{display:flex;align-items:center;gap:12px;min-height:42px;padding:0 4px}
+    .topline h1{font-size:clamp(1.2rem,2vw,1.65rem);line-height:1.1;margin:0;font-weight:700;letter-spacing:-.03em}
+    .live{margin-left:auto;display:flex;align-items:center;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--muted)}
+    .live i{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+    .mobile-switch{display:none}
+    .workspace{flex:1;display:grid;grid-template-columns:minmax(330px,38%) minmax(0,62%);gap:12px;min-height:700px}
+    .panel{background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);min-width:0;overflow:hidden}
+    .control-panel{display:flex;flex-direction:column}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+    .panel-head h2{font-size:1rem;margin:0;letter-spacing:-.015em}
+    .eyebrow{margin:0 0 4px;color:var(--muted);font:600 .68rem/1 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
+    .sample-tag{padding:5px 8px;background:var(--surface-2);border:1px solid var(--line);font:500 .65rem/1 "IBM Plex Mono",monospace;color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+    .metric{padding:14px 16px;border-right:1px solid var(--line)}
+    .metric:last-child{border:0}
+    .metric span{display:block;color:var(--muted);font-size:.68rem;margin-bottom:6px}
+    .metric strong{display:block;font:600 1.15rem/1 "IBM Plex Mono",monospace}
+    .metric strong em{font-style:normal;font-size:.68rem;color:var(--muted);font-weight:500}
+    .inventory{padding:16px 20px 0}
+    .section-title{display:flex;align-items:end;justify-content:space-between;margin-bottom:10px}
+    .section-title h3{font-size:.82rem;margin:0}
+    .section-title span{font-size:.68rem;color:var(--muted)}
+    .stock-table{width:100%;border-collapse:collapse;table-layout:fixed}
+    .stock-table th{text-align:left;color:var(--muted);font:600 .62rem/1 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;padding:8px 8px;border-bottom:1px solid var(--line)}
+    .stock-table th:nth-child(2),.stock-table td:nth-child(2){text-align:center;width:62px}
+    .stock-table th:nth-child(3),.stock-table td:nth-child(3){width:88px}
+    .stock-table td{padding:11px 8px;border-bottom:1px solid var(--line);font-size:.78rem;vertical-align:middle}
+    .product{display:flex;align-items:center;gap:9px;min-width:0}
+    .swatch{width:10px;height:30px;flex:0 0 auto;background:var(--product);border-radius:2px}
+    .product b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.78rem}
+    .product small{color:var(--muted);font:500 .62rem/1.3 "IBM Plex Mono",monospace}
+    .qty{font:600 .8rem "IBM Plex Mono",monospace}
+    .capacity{display:flex;align-items:center;gap:5px}
+    .bar{height:6px;flex:1;background:var(--line);overflow:hidden}
+    .bar i{display:block;height:100%;background:var(--product);width:var(--fill);transition:width .35s ease}
+    .capacity small{font:500 .57rem "IBM Plex Mono",monospace;color:var(--muted);width:25px;text-align:right}
+    .movement{margin:18px 20px 0;padding:15px;background:var(--surface-2);border:1px solid var(--line)}
+    .movement h3{margin:0 0 12px;font-size:.82rem}
+    .fields{display:grid;grid-template-columns:1fr 78px;gap:9px}
+    label{display:block;color:var(--muted);font-size:.65rem;margin-bottom:5px;font-weight:600}
+    select,input{width:100%;height:40px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:0 10px;border-radius:0;outline:none}
+    select:focus,input:focus{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-soft)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    .action{border:0;padding:11px 8px;cursor:pointer;font-weight:700;font-size:.75rem;display:flex;align-items:center;justify-content:center;gap:7px;transition:filter .15s,transform .15s}
+    .action:active{transform:translateY(1px)}
+    .action:disabled{opacity:.5;cursor:wait}
+    .action.in{background:var(--teal);color:#fff}
+    .action.out{background:var(--orange);color:#fff}
+    .arrow{font-family:"IBM Plex Mono",monospace;font-size:1rem}
+    .event-log{padding:18px 20px 20px;margin-top:auto}
+    .event-list{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+    .event-list li{display:grid;grid-template-columns:54px 1fr auto;gap:8px;align-items:center;font-size:.7rem;padding:7px 0;border-bottom:1px dashed var(--line)}
+    .event-list time{font:500 .62rem "IBM Plex Mono",monospace;color:var(--muted)}
+    .event-type{font:600 .6rem "IBM Plex Mono",monospace;padding:3px 5px}
+    .event-type.in{color:var(--teal);background:var(--teal-soft)}
+    .event-type.out{color:var(--orange);background:var(--orange-soft)}
+    .event-list b{font:600 .66rem "IBM Plex Mono",monospace}
+    .reset{border:0;background:none;color:var(--muted);padding:4px 0;text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:.65rem}
+
+    .warehouse-panel{display:flex;flex-direction:column;background:var(--warehouse);position:relative}
+    .warehouse-head{position:absolute;left:18px;right:18px;top:16px;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}
+    .warehouse-head h2{font-size:.92rem;margin:0 0 3px}
+    .warehouse-head p{margin:0;color:var(--muted);font-size:.68rem}
+    .status-chip{background:var(--surface);border:1px solid var(--line);padding:8px 10px;box-shadow:0 5px 14px rgba(0,0,0,.08);font:600 .65rem/1 "IBM Plex Mono",monospace;color:var(--teal)}
+    #warehouse{display:block;width:100%;height:100%;min-height:700px}
+    .zone-label{font:600 11px "IBM Plex Mono",monospace;fill:var(--muted);letter-spacing:.08em}
+    .tiny-label{font:600 8px "IBM Plex Mono",monospace;fill:var(--muted)}
+    .rack-title{font:600 10px "IBM Plex Mono",monospace;fill:var(--ink)}
+    .rack-count{font:600 9px "IBM Plex Mono",monospace;fill:var(--muted)}
+    .svg-ink{fill:var(--ink)}
+    .svg-muted{fill:var(--muted)}
+    .svg-line{stroke:var(--line-strong)}
+    .aisle{fill:var(--surface-2);stroke:var(--line)}
+    .desk{fill:var(--surface);stroke:var(--line-strong)}
+    .dock{fill:var(--surface-2);stroke:var(--line-strong)}
+    .floor-grid{stroke:var(--line);opacity:.55}
+    .rack-frame{fill:none;stroke:var(--shelf);stroke-width:4}
+    .rack-shelf{stroke:var(--shelf);stroke-width:3}
+    .worker .hat{fill:var(--orange)}
+    .worker .face{fill:#f0b98b;stroke:#7e4a2f;stroke-width:1}
+    .worker .beard{fill:#f7efe4;stroke:#b9a693;stroke-width:1}
+    .worker .body{fill:var(--teal)}
+    .worker .shoe{fill:#28322f}
+    .worker .box{fill:var(--yellow);stroke:#795925;stroke-width:1}
+    .pulse{animation:pulse 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    @keyframes pulse{50%{opacity:.45;transform:scale(.88)}}
+    .gate-light{fill:var(--teal)}
+    .route{fill:none;stroke:var(--teal);stroke-width:2;stroke-dasharray:5 6;opacity:.35}
+    .route.out{stroke:var(--orange)}
+    .toast{position:absolute;left:50%;bottom:20px;transform:translate(-50%,20px);background:var(--ink);color:var(--surface);padding:10px 14px;font-size:.72rem;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.22s;z-index:5;white-space:nowrap}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .legend{position:absolute;bottom:18px;right:18px;background:var(--surface);border:1px solid var(--line);padding:8px 10px;display:flex;gap:12px;font-size:.62rem;color:var(--muted)}
+    .legend span{display:flex;align-items:center;gap:5px}
+    .legend i{width:8px;height:8px;background:var(--teal)}
+    .legend i.out{background:var(--orange)}
+
+    @media(max-width:900px){
+      .app{padding:10px;min-height:100vh}
+      .topline{align-items:flex-end;flex-wrap:wrap}
+      .mobile-switch{display:grid;grid-template-columns:1fr 1fr;width:100%;border:1px solid var(--line);background:var(--surface);margin-top:4px}
+      .mobile-switch button{height:38px;border:0;background:transparent;font-weight:700;font-size:.74rem;cursor:pointer}
+      .mobile-switch button.active{background:var(--ink);color:var(--surface)}
+      .workspace{display:block;min-height:0}
+      .panel{box-shadow:none}
+      .panel[data-screen]{display:none}
+      .panel[data-screen].active{display:flex}
+      .control-panel{min-height:calc(100vh - 110px)}
+      .warehouse-panel{min-height:calc(100vh - 110px)}
+      #warehouse{min-height:620px}
+    }
+    @media(max-width:460px){
+      .app{padding:8px}
+      .topline h1{font-size:1.12rem}
+      .live{font-size:.62rem}
+      .panel-head{padding:15px}
+      .metrics .metric{padding:12px 9px}
+      .metric span{font-size:.6rem}
+      .inventory{padding:14px 12px 0}
+      .movement{margin:14px 12px 0}
+      .event-log{padding:16px 12px}
+      .stock-table th,.stock-table td{padding-left:4px;padding-right:4px}
+      .product b{font-size:.7rem}
+      #warehouse{min-height:560px}
+      .warehouse-head{left:12px;right:12px;top:12px}
+      .legend{right:10px;bottom:10px}
+      .toast{bottom:56px;max-width:calc(100% - 24px);white-space:normal;text-align:center}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topline">
+      <h1>Control de movimientos</h1>
+      <div class="live"><i></i><span id="clock">SESIÓN DE DEMO</span></div>
+      <nav class="mobile-switch" aria-label="Cambiar pantalla">
+        <button class="active" data-target="control">Datos</button>
+        <button data-target="warehouse">Almacén</button>
+      </nav>
+    </header>
+
+    <div class="workspace">
+      <section class="panel control-panel active" data-screen="control" aria-labelledby="control-title">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Pantalla 01 · documento</p>
+            <h2 id="control-title">Registro de stock</h2>
+          </div>
+          <span class="sample-tag">DATOS DEMO</span>
+        </div>
+
+        <div class="metrics" aria-label="Resumen de inventario">
+          <div class="metric"><span>Unidades</span><strong id="total-units">176</strong></div>
+          <div class="metric"><span>Ocupación</span><strong id="occupancy">59<em>%</em></strong></div>
+          <div class="metric"><span>En operación</span><strong id="workers-count">5 <em>nomitos</em></strong></div>
+        </div>
+
+        <div class="inventory">
+          <div class="section-title"><h3>Inventario por pasillo</h3><span>Capacidad 300 u.</span></div>
+          <table class="stock-table">
+            <thead><tr><th>Producto</th><th>Stock</th><th>Ocupación</th></tr></thead>
+            <tbody id="stock-body"></tbody>
+          </table>
+        </div>
+
+        <form class="movement" id="movement-form">
+          <h3>Simular cambio del documento</h3>
+          <div class="fields">
+            <div>
+              <label for="product-select">Producto</label>
+              <select id="product-select" aria-label="Producto"></select>
+            </div>
+            <div>
+              <label for="quantity">Cantidad</label>
+              <input id="quantity" type="number" min="1" max="60" value="12" inputmode="numeric" aria-label="Cantidad" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="action in" type="button" id="btn-in"><span class="arrow">→</span>Registrar entrada</button>
+            <button class="action out" type="button" id="btn-out">Registrar salida<span class="arrow">→</span></button>
+          </div>
+        </form>
+
+        <div class="event-log">
+          <div class="section-title"><h3>Actividad reciente</h3><button class="reset" id="reset-demo" type="button">Reiniciar demo</button></div>
+          <ol class="event-list" id="event-list" aria-live="polite"></ol>
+        </div>
+      </section>
+
+      <section class="panel warehouse-panel" data-screen="warehouse" aria-labelledby="warehouse-title">
+        <div class="warehouse-head">
+          <div>
+            <p class="eyebrow">Pantalla 02 · gemelo visual</p>
+            <h2 id="warehouse-title">Operación del almacén</h2>
+            <p>Los nomitos reaccionan a cada variación de stock.</p>
+          </div>
+          <div class="status-chip" id="status-chip">LISTO</div>
+        </div>
+
+        <svg id="warehouse" viewBox="0 0 860 690" role="img" aria-label="Plano animado de un almacén con muelles, estanterías y gnomos trabajadores">
+          <defs>
+            <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+              <path d="M36 0H0V36" class="floor-grid" fill="none" stroke-width="1"/>
+            </pattern>
+            <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity=".15"/>
+            </filter>
+          </defs>
+
+          <rect x="0" y="0" width="860" height="690" fill="var(--floor)"/>
+          <rect x="0" y="0" width="860" height="690" fill="url(#grid)"/>
+          <path d="M108 0V690M754 0V690" class="svg-line" stroke-width="2" stroke-dasharray="7 8" opacity=".6"/>
+
+          <g id="dock-in">
+            <rect x="18" y="116" width="82" height="170" rx="3" class="dock" stroke-width="2"/>
+            <rect x="31" y="142" width="56" height="70" fill="var(--ink)" opacity=".86"/>
+            <path d="M31 142H87M31 156H87M31 170H87M31 184H87M31 198H87" stroke="var(--line-strong)" stroke-width="2"/>
+            <rect x="28" y="225" width="62" height="42" fill="var(--teal)" opacity=".85"/>
+            <circle cx="40" cy="272" r="5" class="gate-light pulse"/>
+            <text x="59" y="304" text-anchor="middle" class="zone-label">ENTRADA</text>
+            <text x="59" y="321" text-anchor="middle" class="tiny-label">MUELLE A</text>
+            <g transform="translate(13 80)">
+              <path d="M0 25h57l17 17v24H0z" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>
+              <rect x="48" y="31" width="16" height="12" fill="var(--teal-soft)"/>
+              <circle cx="16" cy="67" r="8" fill="var(--ink)"/><circle cx="58" cy="67" r="8" fill="var(--ink)"/>
+            </g>
+          </g>
+
+          <g id="dock-out">
+            <rect x="760" y="404" width="82" height="170" rx="3" class="dock" stroke-width="2"/>
+            <rect x="773" y="428" width="56" height="70" fill="var(--ink)" opacity=".86"/>
+            <path d="M773 428H829M773 442H829M773 456H829M773 470H829M773 484H829" stroke="var(--line-strong)" stroke-width="2"/>
+            <rect x="770" y="511" width="62" height="42" fill="var(--orange)" opacity=".9"/>
+            <circle cx="820" cy="560" r="5" fill="var(--orange)" class="pulse"/>
+            <text x="801" y="592" text-anchor="middle" class="zone-label">SALIDA</text>
+            <text x="801" y="609" text-anchor="middle" class="tiny-label">MUELLE B</text>
+            <g transform="translate(770 604)">
+              <path d="M0 0h57l17 17v24H0z" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>
+              <rect x="48" y="6" width="16" height="12" fill="var(--orange-soft)"/>
+              <circle cx="16" cy="42" r="8" fill="var(--ink)"/><circle cx="58" cy="42" r="8" fill="var(--ink)"/>
+            </g>
+          </g>
+
+          <g id="entry-desk" transform="translate(136 135)">
+            <rect width="120" height="62" class="desk" stroke-width="2" filter="url(#softShadow)"/>
+            <rect x="13" y="12" width="42" height="25" fill="var(--ink)" opacity=".82"/>
+            <rect x="18" y="16" width="32" height="15" fill="var(--teal)" opacity=".65"/>
+            <path d="M72 17h33M72 28h24M72 39h30" stroke="var(--line-strong)" stroke-width="3"/>
+            <text x="60" y="82" text-anchor="middle" class="zone-label">BURÓ ENTRADA</text>
+          </g>
+
+          <g id="exit-desk" transform="translate(606 496)">
+            <rect width="120" height="62" class="desk" stroke-width="2" filter="url(#softShadow)"/>
+            <rect x="65" y="12" width="42" height="25" fill="var(--ink)" opacity=".82"/>
+            <rect x="70" y="16" width="32" height="15" fill="var(--orange)" opacity=".7"/>
+            <path d="M14 17h33M14 28h24M14 39h30" stroke="var(--line-strong)" stroke-width="3"/>
+            <text x="60" y="82" text-anchor="middle" class="zone-label">BURÓ SALIDA</text>
+          </g>
+
+          <path id="route-in" class="route" d="M88 255 C145 255 130 300 205 300 S285 330 335 350"/>
+          <path id="route-out" class="route out" d="M525 455 C590 455 595 510 680 510 S746 520 776 520"/>
+
+          <g id="rack-a" data-rack="0" transform="translate(290 145)"></g>
+          <g id="rack-b" data-rack="1" transform="translate(470 145)"></g>
+          <g id="rack-c" data-rack="2" transform="translate(290 402)"></g>
+          <g id="packing" transform="translate(470 402)"></g>
+          <g id="stationary-workers"></g>
+          <g id="moving-workers"></g>
+        </svg>
+        <div class="legend"><span><i></i>Entrada</span><span><i class="out"></i>Salida</span></div>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      'use strict';
+      var initialProducts = [
+        {id:'A-01', name:'Cajas inteligentes', stock:74, capacity:100, color:'#e55d23', rack:'Pasillo A'},
+        {id:'B-02', name:'Sensores IoT', stock:58, capacity:100, color:'#007b70', rack:'Pasillo B'},
+        {id:'C-03', name:'Kits de montaje', stock:44, capacity:100, color:'#f4b942', rack:'Pasillo C'}
+      ];
+      var products = [];
+      var events = [];
+      var busy = false;
+      var workerSerial = 0;
+      var $ = function(s){return document.querySelector(s)};
+      var stockBody = $('#stock-body');
+      var productSelect = $('#product-select');
+      var eventList = $('#event-list');
+      var statusChip = $('#status-chip');
+      var toast = $('#toast');
+      var movingLayer = $('#moving-workers');
+      var NS='http://www.w3.org/2000/svg';
+
+      function cloneInitial(){ products = initialProducts.map(function(p){return Object.assign({},p)}); }
+      function nowTime(){ return new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}); }
+      function total(){ return products.reduce(function(n,p){return n+p.stock},0); }
+      function totalCapacity(){ return products.reduce(function(n,p){return n+p.capacity},0); }
+
+      function render(){
+        stockBody.innerHTML = products.map(function(p){
+          var percent=Math.round((p.stock/p.capacity)*100);
+          return '<tr><td><div class="product" style="--product:'+p.color+'"><i class="swatch"></i><div><b>'+p.name+'</b><small>'+p.id+' · '+p.rack+'</small></div></div></td><td class="qty">'+p.stock+'</td><td><div class="capacity" style="--product:'+p.color+';--fill:'+percent+'%"><span class="bar"><i></i></span><small>'+percent+'%</small></div></td></tr>';
+        }).join('');
+        productSelect.innerHTML=products.map(function(p){return '<option value="'+p.id+'">'+p.id+' · '+p.name+'</option>'}).join('');
+        $('#total-units').textContent=total();
+        $('#occupancy').innerHTML=Math.round(total()/totalCapacity()*100)+'<em>%</em>';
+        $('#workers-count').innerHTML=(3+Math.ceil(total()/100))+' <em>nomitos</em>';
+        products.forEach(function(p,i){renderRack(i,p)});
+        renderStationaryWorkers();
+        renderEvents();
+      }
+
+      function renderRack(i,p){
+        var g=document.querySelector('[data-rack="'+i+'"]');
+        var bins=Math.max(1,Math.ceil(p.stock/10));
+        var html='<text x="75" y="-18" text-anchor="middle" class="rack-title">'+p.rack.toUpperCase()+'</text>';
+        html+='<rect x="0" y="0" width="150" height="150" rx="2" class="aisle" stroke-width="1"/>';
+        html+='<path d="M12 15V132M138 15V132M12 49H138M12 90H138M12 132H138" class="rack-frame"/>';
+        for(var b=0;b<bins;b++){
+          var col=b%4,row=Math.floor(b/4); if(row>2)break;
+          var x=20+col*29,y=26+row*41;
+          html+='<rect x="'+x+'" y="'+y+'" width="22" height="17" rx="2" fill="'+p.color+'" opacity="'+(.7+(b%3)*.12)+'"/>';
+          html+='<path d="M'+(x+3)+' '+(y+5)+'h16" stroke="rgba(255,255,255,.45)"/>';
+        }
+        html+='<rect x="31" y="158" width="88" height="24" fill="var(--surface)" stroke="var(--line-strong)"/>';
+        html+='<text x="75" y="174" text-anchor="middle" class="rack-count">'+p.id+' · '+p.stock+' / '+p.capacity+'</text>';
+        g.innerHTML=html;
+      }
+
+      function gnomeMarkup(x,y,scale,hat,carry){
+        var box=carry?'<rect class="box" x="12" y="20" width="18" height="15" rx="2"/>':'';
+        return '<g class="worker" transform="translate('+x+' '+y+') scale('+scale+')">'+
+          '<ellipse cx="0" cy="25" rx="12" ry="5" fill="rgba(0,0,0,.12)"/>'+
+          '<rect class="body" x="-8" y="4" width="16" height="18" rx="5"/>'+
+          '<circle class="face" cx="0" cy="0" r="9"/>'+
+          '<path class="beard" d="M-7 2Q0 18 7 2Q5 12 0 16Q-5 12-7 2"/>'+
+          '<path class="hat" style="fill:'+hat+'" d="M-10 -4Q0 -27 11 -4Z"/>'+
+          '<rect class="shoe" x="-10" y="19" width="8" height="5" rx="2"/><rect class="shoe" x="2" y="19" width="8" height="5" rx="2"/>'+box+'</g>';
+      }
+
+      function renderStationaryWorkers(){
+        var layer=$('#stationary-workers');
+        layer.innerHTML=gnomeMarkup(189,122,.78,'#e55d23',false)+gnomeMarkup(666,480,.78,'#e55d23',false)+gnomeMarkup(272,322,.72,'#007b70',false)+gnomeMarkup(452,322,.72,'#f4b942',false)+gnomeMarkup(452,580,.72,'#e55d23',false);
+      }
+
+      function renderPacking(){
+        $('#packing').innerHTML='<text x="75" y="-18" text-anchor="middle" class="rack-title">PREPARACIÓN</text><rect width="150" height="150" class="aisle"/><rect x="18" y="20" width="114" height="56" class="desk" stroke-width="2"/><path d="M30 34h90M30 48h90M30 62h90" stroke="var(--line)" stroke-width="2"/><rect x="34" y="98" width="28" height="26" fill="#f4b942" opacity=".8"/><rect x="74" y="91" width="39" height="33" fill="#e55d23" opacity=".75"/><text x="75" y="173" text-anchor="middle" class="rack-count">CONTROL + EMPAQUE</text>';
+      }
+
+      function renderEvents(){
+        eventList.innerHTML=events.slice(0,3).map(function(e){
+          return '<li><time>'+e.time+'</time><span><span class="event-type '+e.type+'">'+(e.type==='in'?'ENTRADA':'SALIDA')+'</span> '+e.name+'</span><b>'+(e.type==='in'?'+':'−')+e.qty+'</b></li>';
+        }).join('') || '<li><time>—</time><span>Sin movimientos en esta sesión</span><b>—</b></li>';
+      }
+
+      function updateClock(){
+        $('#clock').textContent='SESIÓN · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      }
+
+      function svgEl(tag,attrs){
+        var el=document.createElementNS(NS,tag);
+        Object.keys(attrs||{}).forEach(function(k){el.setAttribute(k,attrs[k])});
+        return el;
+      }
+
+      function createMovingGnome(color,carry){
+        var group=svgEl('g',{'data-moving':'true','aria-hidden':'true'});
+        group.innerHTML=gnomeMarkup(0,0,.72,color,carry);
+        movingLayer.appendChild(group);
+        return group;
+      }
+
+      function pointOnPolyline(points,t){
+        var lengths=[],totalLen=0;
+        for(var i=1;i<points.length;i++){
+          var dx=points[i][0]-points[i-1][0],dy=points[i][1]-points[i-1][1];
+          var len=Math.sqrt(dx*dx+dy*dy); lengths.push(len); totalLen+=len;
+        }
+        var target=t*totalLen,acc=0;
+        for(var j=0;j<lengths.length;j++){
+          if(acc+lengths[j]>=target){
+            var q=(target-acc)/lengths[j];
+            return [points[j][0]+(points[j+1][0]-points[j][0])*q,points[j][1]+(points[j+1][1]-points[j][1])*q];
+          }
+          acc+=lengths[j];
+        }
+        return points[points.length-1];
+      }
+
+      function animateGnome(el,points,delay,duration){
+        return new Promise(function(resolve){
+          var start=null;
+          function frame(ts){
+            if(start===null)start=ts;
+            var raw=(ts-start-delay)/duration;
+            if(raw<0){requestAnimationFrame(frame);return}
+            var t=Math.max(0,Math.min(1,raw));
+            var eased=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+            var p=pointOnPolyline(points,eased);
+            var bob=Math.sin(t*Math.PI*12)*2;
+            el.setAttribute('transform','translate('+p[0]+' '+(p[1]+bob)+')');
+            if(t<1)requestAnimationFrame(frame);else{el.remove();resolve()}
+          }
+          requestAnimationFrame(frame);
+        });
+      }
+
+      function showToast(text){
+        toast.textContent=text;toast.classList.add('show');
+        window.clearTimeout(showToast.t);showToast.t=window.setTimeout(function(){toast.classList.remove('show')},2800);
+      }
+
+      function setMobileScreen(name){
+        document.querySelectorAll('[data-screen]').forEach(function(p){p.classList.toggle('active',p.dataset.screen===name)});
+        document.querySelectorAll('.mobile-switch button').forEach(function(b){b.classList.toggle('active',b.dataset.target===name)});
+      }
+
+      async function move(type){
+        if(busy)return;
+        var id=productSelect.value;
+        var qty=Math.max(1,Math.min(60,parseInt($('#quantity').value,10)||1));
+        var p=products.find(function(item){return item.id===id});
+        if(type==='out'&&qty>p.stock){showToast('No hay suficiente stock de '+p.name+'.');return}
+        if(type==='in'&&p.stock+qty>p.capacity){showToast('La entrada supera la capacidad de '+p.rack+'.');return}
+        busy=true;$('#btn-in').disabled=true;$('#btn-out').disabled=true;
+        statusChip.textContent=type==='in'?'RECIBIENDO '+qty:'DESPACHANDO '+qty;
+        statusChip.style.color=type==='in'?'var(--teal)':'var(--orange)';
+        if(window.matchMedia('(max-width:900px)').matches)setMobileScreen('warehouse');
+        var count=Math.min(4,Math.max(1,Math.ceil(qty/12)));
+        var rackTargets=[[365,340],[545,340],[365,590]];
+        var target=rackTargets[products.indexOf(p)];
+        var promises=[];
+        for(var i=0;i<count;i++){
+          var worker=createMovingGnome(p.color,true);
+          var inPath=[[75,255],[150,255],[215,300],[target[0],target[1]]];
+          var outPath=[[target[0],target[1]],[525,455],[640,510],[790,520]];
+          promises.push(animateGnome(worker,type==='in'?inPath:outPath,i*230,2100+i*60));
+        }
+        await Promise.all(promises);
+        p.stock+=type==='in'?qty:-qty;
+        events.unshift({time:nowTime(),type:type,name:p.name,qty:qty});
+        render();
+        statusChip.textContent='MOVIMIENTO COMPLETADO';
+        statusChip.style.color='var(--teal)';
+        showToast((type==='in'?'Entrada registrada: +':'Salida registrada: −')+qty+' · '+p.id);
+        setTimeout(function(){statusChip.textContent='LISTO'},1800);
+        busy=false;$('#btn-in').disabled=false;$('#btn-out').disabled=false;
+      }
+
+      function resetDemo(){
+        if(busy)return;
+        cloneInitial();events=[];render();statusChip.textContent='LISTO';showToast('Datos de demostración reiniciados.');
+      }
+
+      document.querySelectorAll('.mobile-switch button').forEach(function(b){b.addEventListener('click',function(){setMobileScreen(b.dataset.target)})});
+      $('#btn-in').addEventListener('click',function(){move('in')});
+      $('#btn-out').addEventListener('click',function(){move('out')});
+      $('#movement-form').addEventListener('submit',function(e){e.preventDefault();move('in')});
+      $('#reset-demo').addEventListener('click',resetDemo);
+      cloneInitial();renderPacking();render();updateClock();setInterval(updateClock,1000);
+    })();
+  </script>
+</body>
+</html>

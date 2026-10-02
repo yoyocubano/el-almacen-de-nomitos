@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>⚡ INSPECTION TECHNIQUE - TABLEAUX ÉLECTRIQUES</title>
+<style>
+:root {
+--bg: #0d1117;
+--card: #161b22;
+--accent-blue: #58a6ff;
+--accent-orange: #f0883e;
+--accent-green: #3fb950;
+--text: #c9d1d9;
+--border: #30363d;
+}
+body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 30px; line-height: 1.6; }
+.container { max-width: 1000px; margin: auto; }
+header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 40px; text-align: center; }
+h1 { color: #fff; text-transform: uppercase; letter-spacing: 3px; margin: 0; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; margin-bottom: 10px; }
+/* Estilos de Planta */
+.floor-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; transition: 0.3s; }
+.floor-box:hover { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(88, 166, 255, 0.1); }
+.floor-header { background: rgba(255,255,255,0.05); padding: 15px 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.floor-num { font-size: 1.8em; font-weight: bold; color: var(--accent-blue); }
+.content { padding: 25px; }
+
+.tg-name { font-size: 1.3em; font-weight: bold; color: #fff; display: block; margin-bottom: 10px; }
+.desc { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-blue); }
+/* Colores específicos */
+.force { border-left-color: var(--accent-orange); }
+.knx { border-left-color: var(--accent-green); }
+.sec { border-left-color: #f85149; }
+
+ul { padding-left: 20px; }
+li { margin-bottom: 8px; }
+b { color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>INSPECTION ÉLECTRIQUE : RAPPORT DE STOCKAGE</h1>
+<p style="color: #8b949e;">Inventaire technique consolidé - Mise à jour 2026</p>
+</header>
+
+<div class="floor-section">
+<div class="floor-box">
+<div class="floor-header">
+<span class="floor-num">ÉTAGE -2</span>
+<span class="badge" style="background: #238636;">VENTILATION & DISTRIBUTION</span>
+</div>
+<div class="content">
+<span class="tg-name">TGO BR Brams (Local Ventilation)</span>
+<div class="desc">
+<b>Disjoncteurs Prises Divers :</b> Alimentation directe des services critiques :
+<ul>
+<li><b>Alimentation Étage :</b> Distribution générale du niveau.</li>
+<li><b>Salle Coffre :</b> Circuit haute sécurité.</li>
+<li><b>Salle Expédition & Accueil :</b> Zone de logistique et réception.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<div class="floor-box">
+<div class="floor-header">
+<span class="floor-num">ÉTAGE -4</span>
+<span class="badge" style="background: #1f6feb;">HUB D'ALIMENTATION</span>
+</div>
+<div class="content">
+<span class="tg-name">TDBR-4 (Tableau Principal)</span>
+<div class="desc force">
+<b>Alimentation Maîtresse :</b> Gère l'énergie du <b>Niveau -5</b> et du <b>Niveau -4</b>.
+<ul>
+<li><b>Conciergerie :</b> Alimentation de la majorité des éclairages et prises.</li>
+<li><b>SAS de Livraison :</b> Comprend un <b>Tableau Secondaire (TD OBR)</b> dédié au contrôle total du SAS.</li>
+</ul>
+</div>
+<br>
+<span class="tg-name">TS Ascenseur 1 + 2</span>
+<p>Contrôle de la force motrice des cabines principales.</p>
+</div>
+</div>
+
+<div class="floor-box">
+<div class="floor-header">
+<span class="floor-num">ÉTAGE -5</span>
+<span class="badge" style="background: var(--accent-green); color: #000;">CONTRÔLE LUMIÈRE (KNX)</span>
+</div>
+<div class="content">
+<span class="tg-name">TDBR-5</span>
+<div class="desc knx">
+<b>Cœur de l'Éclairage :</b> Ce tableau alimente la quasi-totalité des éclairages de <b>tous los pisos</b> du bâtiment.
+<ul>
+<li><b>Système KNX :</b> Gestion automatisée et centralisée de la luminosité globale.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="floor-box">
+<div class="floor-header">
+<span class="floor-num">ÉTAGES -6 / -7</span>
+<span class="badge" style="background: #484f58;">LOCAL ARCHIVE</span>
+</div>
+<div class="content">
+<span class="tg-name">TS Local Archive (-7)</span>
+<p style="color: #8b949e;"><i>Contrôle local - Destination de l'alimentation exacte : Inconnue.</i></p>
+<hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+<span class="tg-name">TS Local Archive (-6)</span>
+<p style="color: #8b949e;"><i>Contrôle local - Destination de l'alimentation exacte : Inconnue.</i></p>
+</div>
+</div>
+
+<div class="floor-box">
+<div class="floor-header">
+<span class="floor-num">ÉTAGE -8</span>
+<span class="badge" style="background: var(--accent-orange); color: #000;">LOGISTIQUE LOURDE</span>
+</div>
+<div class="content">
+<span class="tg-name">TS Ascenseur 3 (Monte-charge)</span>
+<div class="desc force">
+Système de levage industriel et alimentation des services de cabine.
+</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>
+
+
+Enviado desde mi iPhone
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>⚡ INSPECTION TECHNIQUE - TABLEAUX ÉLECTRIQUES</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --accent-blue: #58a6ff;
+            --accent-orange: #f0883e;
+            --accent-green: #3fb950;
+            --text: #c9d1d9;
+            --border: #30363d;
+        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 30px; line-height: 1.6; }
+        .container { max-width: 1000px; margin: auto; }
+        header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 40px; text-align: center; }
+        h1 { color: #fff; text-transform: uppercase; letter-spacing: 3px; margin: 0; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; margin-bottom: 10px; }
+        
+        /* Estilos de Planta */
+        .floor-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; transition: 0.3s; }
+        .floor-box:hover { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(88, 166, 255, 0.1); }
+        .floor-header { background: rgba(255,255,255,0.05); padding: 15px 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .floor-num { font-size: 1.8em; font-weight: bold; color: var(--accent-blue); }
+        .content { padding: 25px; }
+
+        .tg-name { font-size: 1.3em; font-weight: bold; color: #fff; display: block; margin-bottom: 10px; }
+        .desc { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent-blue); }
+        
+        /* Colores específicos */
+        .force { border-left-color: var(--accent-orange); }
+        .knx { border-left-color: var(--accent-green); }
+        .sec { border-left-color: #f85149; }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        b { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>INSPECTION ÉLECTRIQUE : RAPPORT DE STOCKAGE</h1>
+            <p style="color: #8b949e;">Inventaire technique consolidé - Mise à jour 2026</p>
+        </header>
+
+        <div class="floor-section">
+            <div class="floor-box">
+                <div class="floor-header">
+                    <span class="floor-num">ÉTAGE -2</span>
+                    <span class="badge" style="background: #238636;">VENTILATION & DISTRIBUTION</span>
+                </div>
+                <div class="content">
+                    <span class="tg-name">TGO BR Brams (Local Ventilation)</span>
+                    <div class="desc">
+                        <b>Disjoncteurs Prises Divers :</b> Alimentation directe des services critiques :
+                        <ul>
+                            <li><b>Alimentation Étage :</b> Distribution générale du niveau.</li>
+                            <li><b>Salle Coffre :</b> Circuit haute sécurité.</li>
+                            <li><b>Salle Expédition & Accueil :</b> Zone de logistique et réception.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="floor-box">
+            <div class="floor-header">
+                <span class="floor-num">ÉTAGE -4</span>
+                <span class="badge" style="background: #1f6feb;">HUB D'ALIMENTATION</span>
+            </div>
+            <div class="content">
+                <span class="tg-name">TDBR-4 (Tableau Principal)</span>
+                <div class="desc force">
+                    <b>Alimentation Maîtresse :</b> Gère l'énergie du <b>Niveau -5</b> et du <b>Niveau -4</b>.
+                    <ul>
+                        <li><b>Conciergerie :</b> Alimentation de la majorité des éclairages et prises.</li>
+                        <li><b>SAS de Livraison :</b> Comprend un <b>Tableau Secondaire (TD OBR)</b> dédié au contrôle total du SAS.</li>
+                    </ul>
+                </div>
+                <br>
+                <span class="tg-name">TS Ascenseur 1 + 2</span>
+                <p>Contrôle de la force motrice des cabines principales.</p>
+            </div>
+        </div>
+
+        <div class="floor-box">
+            <div class="floor-header">
+                <span class="floor-num">ÉTAGE -5</span>
+                <span class="badge" style="background: var(--accent-green); color: #000;">CONTRÔLE LUMIÈRE (KNX)</span>
+            </div>
+            <div class="content">
+                <span class="tg-name">TDBR-5</span>
+                <div class="desc knx">
+                    <b>Cœur de l'Éclairage :</b> Ce tableau alimente la quasi-totalité des éclairages de <b>tous los pisos</b> du bâtiment.
+                    <ul>
+                        <li><b>Système KNX :</b> Gestion automatisée et centralisée de la luminosité globale.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="floor-box">
+            <div class="floor-header">
+                <span class="floor-num">ÉTAGES -6 / -7</span>
+                <span class="badge" style="background: #484f58;">LOCAL ARCHIVE</span>
+            </div>
+            <div class="content">
+                <span class="tg-name">TS Local Archive (-7)</span>
+                <p style="color: #8b949e;"><i>Contrôle local - Destination de l'alimentation exacte : Inconnue.</i></p>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 15px 0;">
+                <span class="tg-name">TS Local Archive (-6)</span>
+                <p style="color: #8b949e;"><i>Contrôle local - Destination de l'alimentation exacte : Inconnue.</i></p>
+            </div>
+        </div>
+
+        <div class="floor-box">
+            <div class="floor-header">
+                <span class="floor-num">ÉTAGE -8</span>
+                <span class="badge" style="background: var(--accent-orange); color: #000;">LOGISTIQUE LOURDE</span>
+            </div>
+            <div class="content">
+                <span class="tg-name">TS Ascenseur 3 (Monte-charge)</span>
+                <div class="desc force">
+                    Système de levage industriel et alimentation des services de cabine.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
+

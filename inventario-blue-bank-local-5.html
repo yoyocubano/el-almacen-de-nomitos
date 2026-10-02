@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>📦 INVENTAIRE LOGISTIQUE - LOCAL STOCKAGE</title>
+<style>
+:root {
+--bg: #0d1117;
+--card: #161b22;
+--accent-gold: #e3b341;
+--accent-blue: #58a6ff;
+--accent-gray: #8b949e;
+--text: #c9d1d9;
+--border: #30363d;
+}
+body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 30px; }
+.container { max-width: 1100px; margin: auto; }
+header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 40px; text-align: center; }
+h1 { color: #fff; text-transform: uppercase; letter-spacing: 3px; margin: 0; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+.zone-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }
+.zone-card:hover { border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(227, 179, 65, 0.1); }
+.zone-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+.zone-title { font-size: 1.2em; font-weight: bold; color: var(--accent-gold); text-transform: uppercase; }
+.badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7em; font-weight: bold; background: var(--border); }
+
+.item-list { list-style: none; padding: 0; }
+.item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.item-name { color: #fff; }
+.item-qty { color: var(--accent-blue); font-weight: bold; }
+.tag-texaa { color: #ff7b72; font-weight: bold; } /* Color para acústica */
+.status { font-size: 0.85em; color: var(--accent-gray); font-style: italic; }
+
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>INVENTAIRE GLOBAL : LOCAL DE STOCKAGE</h1>
+<p style="color: var(--accent-gray);">Rapport de situation - Mobilier, Acoustique & Logistique</p>
+</header>
+
+<div class="grid">
+<div class="zone-card">
+<div class="zone-header">
+<span class="zone-title">Côté Gauche : Stockage Mural</span>
+<span class="badge">ESTRUCTURA METÁLICA</span>
+</div>
+<ul class="item-list">
+<li class="item">
+<span>Rayonnage Industriel (Vert)</span>
+<span class="item-qty">1 Unité</span>
+</li>
+<li class="item">
+<span class="item-name">Panneaux Acoustiques <span class="tag-texaa">TEXAA</span></span>
+<span class="item-qty">1 Lot</span>
+</li>
+<li class="item">
+<span>Plateaux de table (Sous bulle)</span>
+<span class="item-qty">8+</span>
+</li>
+<li class="item">
+<span>Radiateur électrique d'appoint</span>
+<span class="item-qty">1</span>
+</li>
+<li class="item">
+<span class="status">Note: Accès réduit par panneaux en vrac</span>
+</li>
+</ul>
+</div>
+
+<div class="zone-card">
+<div class="zone-header">
+<span class="zone-title">Côté Droit : Mobilier Bureau</span>
+<span class="badge">POSTES DE TRAVAIL</span>
+</div>
+<ul class="item-list">
+<li class="item">
+<span class="item-name">Sièges de bureau (Ergo)</span>
+<span class="item-qty">5</span>
+</li>
+<li class="item">
+<span class="item-name">Structures Sit-Stand (Moteurs)</span>
+<span class="item-qty">2</span>
+</li>
+<li class="item">
+<span>Tabourets hauts / Techniques</span>
+<span class="item-qty">3</span>
+</li>
+<li class="item">
+<span>Caissons (Bucks) Bois/Métal</span>
+<span class="item-qty">4</span>
+</li>
+<li class="item">
+<span>Armoire métallique (Gris/Beige)</span>
+<span class="item-qty">1</span>
+</li>
+</ul>
+</div>
+
+<div class="zone-card">
+<div class="zone-header">
+<span class="zone-title">Zone Fond : Logistique</span>
+<span class="badge">MARQUE STREFF</span>
+</div>
+<ul class="item-list">
+<li class="item">
+<span class="item-name">Cartons Streff (World Wide Moving)</span>
+<span class="item-qty">5</span>
+</li>
+<li class="item">
+<span>Cartons divers (Petits formats)</span>
+<span class="item-qty">12</span>
+</li>
+<li class="item">
+<span>Sacs "À détruire"</span>
+<span class="item-qty">2</span>
+</li>
+</ul>
+</div>
+
+<div class="zone-card">
+<div class="zone-header">
+<span class="zone-title">Vrac & Accessoires</span>
+<span class="badge">ÉQUIPEMENT DIVERS</span>
+</div>
+<ul class="item-list">
+<li class="item">
+<span class="item-name">Portemanteaux sur pied</span>
+<span class="item-qty">2</span>
+</li>
+<li class="item">
+<span>Poubelles bureau (Noires)</span>
+<span class="item-qty">2</span>
+</li>
+<li class="item">
+<span>Supports porte-plans</span>
+<span class="item-qty">3</span>
+</li>
+</ul>
+</div>
+</div>
+
+<footer style="margin-top: 40px; text-align: center; border-top: 1px solid var(--border); padding-top: 20px;">
+<p style="color: var(--accent-gold); font-weight: bold;">⚠️ AVERTISSEMENT SÉCURITÉ :</p>
+<p style="font-size: 0.9em; color: var(--accent-gray);">
+Passage central encombré. Risque de chute au niveau des panneaux acoustiques et structures Sit-Stand saillantes.
+</p>
+</footer>
+</div>
+</body>
+</html>
+local -5 stockage
+
+Enviado desde mi iPhone
